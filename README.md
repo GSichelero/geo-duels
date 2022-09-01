@@ -1,6 +1,6 @@
-# Auth Site
+# GeoDuels
 
-This is a project that demonstrates how to do JWT authentication using Django and React served by an Express server.
+JWT authentication using Django and React served by an Express server.
 
 The json web token credentials in this project are stored with cookies that have the httpOnly flag set to true to prevent JavaScript on the browser from accessing the values.
 
@@ -17,5 +17,5 @@ To test the project, simply:
 - in the frontend folder, run: npm install
 - in the frontend folder, run: npm start
 - in the browser navigate to (Production): http://localhost:5000
-- optionally you can also navigate into fronend/client, then run: npm start
+- optionally you can also navigate into frontend/client, then run: npm start
   - then from there in the browser navigate to (Development): http://localhost:3000
