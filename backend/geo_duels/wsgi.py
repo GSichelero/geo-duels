@@ -1,5 +1,5 @@
 """
-WSGI config for auth_site project.
+WSGI config for geo_duels project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'auth_site.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'geo_duels.settings')
 
 application = get_wsgi_application()
