@@ -1,5 +1,6 @@
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions
+from .models import FriendRequest
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -39,4 +40,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
-    fields = ('first_name', 'last_name', 'email',)
+    fields = ('first_name', 'last_name', 'email', 'friends')
+
+
+class FriendRequestSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = FriendRequest
+    fields = ('from_user', 'to_user', 'timestamp')

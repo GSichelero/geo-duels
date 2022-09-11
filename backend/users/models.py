@@ -42,6 +42,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
   email = models.EmailField(unique=True, max_length=255)
   is_active = models.BooleanField(default=True)
   is_staff = models.BooleanField(default=False)
+  friends = models.ManyToManyField('self', blank=True)
 
   objects = UserAccountManager()
 
@@ -50,3 +51,16 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
   def __str__(self):
     return self.email
+
+
+class FriendRequest(models.Model):
+  from_user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='friend_requests_sent')
+  to_user = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='friend_requests_received')
+  timestamp = models.DateTimeField(auto_now_add=True)
+
+  def __str__(self):
+    return f'{self.from_user} to {self.to_user}'
+
+  class Meta:
+    unique_together = ('from_user', 'to_user')
+    ordering = ('-timestamp',)
