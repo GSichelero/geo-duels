@@ -1,17 +1,17 @@
 # GeoDuels
 
-JWT authentication using Django and React served by an Express server.
-
-The json web token credentials in this project are stored with cookies that have the httpOnly flag set to true to prevent JavaScript on the browser from accessing the values.
-
-To test the project, simply:
-
+## Setting up your local environment
 - clone the repository
+
+### Backend
 - in the backend folder, create a virtual environment with: python3 -m venv venv
 - activate the virtual environment: source venv/bin/activate (MacOS), .\venv\Scripts\activate (Windows)
 - then install the python packages: pip install -r requirements.txt
-- migrate to the PostgreSQL database: python manage.py migrate
+- if necessary, create migration with the database changes recently made: python manage.py makemigrations
+  - migrate to the PostgreSQL database: python manage.py migrate
 - run the server: python manage.py runserver
+
+### Frontend
 - in the frontend/client folder, run: npm install
 - in the frontend/client folder, run: npm run build
 - in the frontend folder, run: npm install
