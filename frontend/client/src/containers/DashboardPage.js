@@ -22,6 +22,7 @@ const DashboardPage = () => {
 						<li>First Name: {user.first_name}</li>
 						<li>Last Name: {user.last_name}</li>
 						<li>Email: {user.email}</li>
+						<li>Friends: {user.friends}</li>
 					</ul>
 				</>
 			)}
