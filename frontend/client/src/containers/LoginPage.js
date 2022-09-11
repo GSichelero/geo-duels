@@ -34,7 +34,7 @@ const LoginPage = () => {
 	if (isAuthenticated) return <Navigate to='/dashboard' />;
 
 	return (
-		<Layout title='Auth Site | Login' content='Login page'>
+		<Layout title='Geo Duels | Login' content='Login page'>
 			<h1>Log into your Account</h1>
 			<form className='mt-5' onSubmit={onSubmit}>
 				<div className='form-group'>

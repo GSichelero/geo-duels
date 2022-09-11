@@ -2,9 +2,9 @@ import Layout from 'components/Layout';
 
 const HomePage = () => {
 	return (
-		<Layout title='Auth Site | Home' content='Home page'>
-			<h1 className='mb-5'>Auth Site</h1>
-			<p>Welcome to Auth Site!</p>
+		<Layout title='Geo Duels | Home' content='Home page'>
+			<h1 className='mb-5'>Geo Duels</h1>
+			<p>Welcome to Geo Duels!</p>
 		</Layout>
 	);
 };
