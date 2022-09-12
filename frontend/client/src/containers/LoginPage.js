@@ -6,7 +6,7 @@ import Layout from 'components/Layout';
 
 const LoginPage = () => {
 	const dispatch = useDispatch();
-	const { loading, isAuthenticated, registered } = useSelector(
+	const { loading, isAuthenticated, registered, previousPath } = useSelector(
 		state => state.user
 	);
 
@@ -31,7 +31,7 @@ const LoginPage = () => {
 		dispatch(login({ email, password }));
 	};
 
-	if (isAuthenticated) return <Navigate to='/dashboard' />;
+	if (isAuthenticated) return <Navigate to={`${previousPath}`} />;
 
 	return (
 		<Layout title='Geo Duels | Login' content='Login page'>

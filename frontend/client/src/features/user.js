@@ -138,11 +138,34 @@ export const logout = createAsyncThunk('users/logout', async (_, thunkAPI) => {
 	}
 });
 
+export const getAllUsers = createAsyncThunk('users/get-all-users', async (_, thunkAPI) => {
+	try {
+		const res = await fetch('/api/users/get-all-users', {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json',
+			},
+		});
+
+		const data = await res.json();
+
+		if (res.status === 200) {
+			return data;
+		} else {
+			return thunkAPI.rejectWithValue(data);
+		}
+	} catch (err) {
+		return thunkAPI.rejectWithValue(err.response.data);
+	}
+});
+
 const initialState = {
 	isAuthenticated: false,
 	user: null,
 	loading: false,
 	registered: false,
+	previousPath: '/dashboard',
+	users: [],
 };
 
 const userSlice = createSlice({
@@ -204,6 +227,17 @@ const userSlice = createSlice({
 				state.user = null;
 			})
 			.addCase(logout.rejected, state => {
+				state.loading = false;
+			})
+			.addCase(getAllUsers.pending, state => {
+				state.loading = true;
+				state.previousPath = '/friends';
+			})
+			.addCase(getAllUsers.fulfilled, (state, action) => {
+				state.loading = false;
+				state.users = action.payload;
+			})
+			.addCase(getAllUsers.rejected, state => {
 				state.loading = false;
 			});
 	},

@@ -18,6 +18,11 @@ const Navbar = () => {
 					Logout
 				</a>
 			</li>
+			<li className='nav-item'>
+				<NavLink className='nav-link' to='/friends'>
+					Friends
+				</NavLink>
+			</li>
 		</>
 	);
 

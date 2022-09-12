@@ -181,3 +181,13 @@ class GetFriendRequestsReceivedView(APIView):
     friend_requests = FriendRequestSerializer(friend_requests, many=True)
 
     return Response(friend_requests.data, status=status.HTTP_200_OK)
+
+
+class GetAllUsersView(APIView):
+  permission_classes = [permissions.IsAuthenticated]
+
+  def get(self, request):
+    users = User.objects.all()
+    users = UserSerializer(users, many=True)
+
+    return Response(users.data, status=status.HTTP_200_OK)

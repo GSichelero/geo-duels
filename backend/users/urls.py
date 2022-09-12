@@ -9,7 +9,8 @@ from .views import (
   RemoveFriendView,
   GetFriendsView,
   GetFriendRequestsSentView,
-  GetFriendRequestsReceivedView
+  GetFriendRequestsReceivedView,
+  GetAllUsersView,
 )
 
 
@@ -24,4 +25,5 @@ urlpatterns = [
   path('get-friends', GetFriendsView.as_view()),
   path('get-friend-requests-sent', GetFriendRequestsSentView.as_view()),
   path('get-friend-requests-received', GetFriendRequestsReceivedView.as_view()),
+  path('get-all-users', GetAllUsersView.as_view()),
 ]
