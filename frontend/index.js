@@ -10,6 +10,7 @@ const meRoute = require('./routes/auth/me');
 const registerRoute = require('./routes/auth/register');
 const verifyRoute = require('./routes/auth/verify');
 const usersRoute = require('./routes/friends/users');
+const friendsRoute = require('./routes/friends/friends')
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use(meRoute);
 app.use(registerRoute);
 app.use(verifyRoute);
 app.use(usersRoute);
+app.use(friendsRoute);
 
 app.use(express.static('client/build'));
 app.get('*', (req, res) => {

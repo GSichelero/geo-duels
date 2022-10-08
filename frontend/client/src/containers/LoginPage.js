@@ -35,14 +35,14 @@ const LoginPage = () => {
 
 	return (
 		<Layout title='Geo Duels | Login' content='Login page'>
-			<h1>Log into your Account</h1>
-			<form className='mt-5' onSubmit={onSubmit}>
-				<div className='form-group'>
-					<label className='form-label' htmlFor='email'>
+			<h1 className='text-4xl font-bold text-white text-center m-5'>Log into your Account</h1>
+			<form onSubmit={onSubmit}>
+				<div className='mb-6'>
+					<label className='block mb-2 text-sm font-medium text-white dark:text-gray-300' htmlFor='email'>
 						Email
 					</label>
 					<input
-						className='form-control'
+						className='bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
 						type='email'
 						name='email'
 						onChange={onChange}
@@ -50,12 +50,12 @@ const LoginPage = () => {
 						required
 					/>
 				</div>
-				<div className='form-group mt-3'>
-					<label className='form-label' htmlFor='password'>
+				<div className='mb-6'>
+					<label className='block mb-2 text-sm font-medium text-white dark:text-gray-300' htmlFor='password'>
 						Password
 					</label>
 					<input
-						className='form-control'
+						className='bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
 						type='password'
 						name='password'
 						onChange={onChange}
@@ -65,10 +65,10 @@ const LoginPage = () => {
 				</div>
 				{loading ? (
 					<div className='spinner-border text-primary' role='status'>
-						<span className='visually-hidden'>Loading...</span>
+						<span className='visually-hidden text-white'>Loading...</span>
 					</div>
 				) : (
-					<button className='btn btn-primary mt-4'>Login</button>
+					<button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'>Login</button>
 				)}
 			</form>
 		</Layout>

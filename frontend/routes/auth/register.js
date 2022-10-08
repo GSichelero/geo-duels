@@ -5,11 +5,12 @@ const fetch = (...args) =>
 const router = express.Router();
 
 router.post('/api/users/register', async (req, res) => {
-	const { first_name, last_name, email, password } = req.body;
+	const { first_name, last_name, nickname, email, password } = req.body;
 
 	const body = JSON.stringify({
 		first_name,
 		last_name,
+		nickname,
 		email,
 		password,
 	});

@@ -9,7 +9,7 @@ User = get_user_model()
 class UserCreateSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
-    fields = ('first_name', 'last_name', 'email', 'password')
+    fields = ('first_name', 'last_name', 'email', 'nickname', 'password')
 
   def validate(self, data):
     user = User(**data)
@@ -30,6 +30,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     user = User.objects.create_user(
       first_name=validated_data['first_name'],
       last_name=validated_data['last_name'],
+      nickname=validated_data['nickname'],
       email=validated_data['email'],
       password=validated_data['password'],
     )
@@ -40,10 +41,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
-    fields = ('first_name', 'last_name', 'email', 'friends')
+    fields = ('id', 'first_name', 'last_name', 'nickname', 'email', 'friends')
 
 
 class FriendRequestSerializer(serializers.ModelSerializer):
+  # return the user object instead of the user id
+  from_user = UserSerializer(read_only=True)
+  to_user = UserSerializer(read_only=True)
+
   class Meta:
     model = FriendRequest
-    fields = ('from_user', 'to_user', 'timestamp')
+    fields = ('id', 'from_user', 'to_user')
