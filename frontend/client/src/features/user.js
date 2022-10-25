@@ -406,6 +406,147 @@ export const removeFriend = createAsyncThunk(
 	}
 });
 
+
+export const createRoom = createAsyncThunk(
+	'users/create-room',
+	async ({  room_name, room_password, max_members, number_of_rounds, time_per_pick, time_per_guess, moving_allowed }, thunkAPI) => {
+		const body = JSON.stringify({
+			room_name,
+			room_password,
+			max_members,
+			number_of_rounds,
+			time_per_pick,
+			time_per_guess,
+			moving_allowed,
+		});
+
+		try {
+			const res = await fetch('/api/users/create-room', {
+				method: 'POST',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+				body,
+			});
+
+			const data = await res.json();
+
+			if (res.status === 200) {
+				return data;
+			} else {
+				return thunkAPI.rejectWithValue(data);
+			}
+		} catch (err) {
+			return thunkAPI.rejectWithValue(err.response.data);
+		}
+	});
+
+export const getReceivedInvites = createAsyncThunk('users/get-received-invites', async (thunkAPI) => {
+	try {
+		const res = await fetch('/api/users/get-received-invites', {
+			method: 'GET',
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
+			},
+		});
+
+		const data = await res.json();
+
+		if (res.status === 200) {
+			return data;
+		} else {
+			return thunkAPI.rejectWithValue(data);
+		}
+	} catch (err) {
+		return thunkAPI.rejectWithValue(err.response.data);
+	}
+});
+
+export const rejectInvite = createAsyncThunk('users/reject-invite', async ({ room_id }, thunkAPI) => {
+	const body = JSON.stringify({
+		room_id,
+	});
+
+	try {
+		const res = await fetch('/api/users/reject-invite', {
+			method: 'POST',
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
+			},
+			body,
+		});
+
+		const data = await res.json();
+
+		if (res.status === 200) {
+			return data;
+		} else {
+			return thunkAPI.rejectWithValue(data);
+		}
+	} catch (err) {
+		return thunkAPI.rejectWithValue(err.response.data);
+	}
+});
+
+export const joinRoom = createAsyncThunk('users/join-room', async ({ room_name, room_password }, thunkAPI) => {
+	const body = JSON.stringify({
+		room_name,
+		room_password,
+	});
+
+	try {
+		const res = await fetch('/api/users/join-room', {
+			method: 'POST',
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
+			},
+			body,
+		});
+
+		const data = await res.json();
+
+		if (res.status === 200) {
+			return data;
+		} else {
+			return thunkAPI.rejectWithValue(data);
+		}
+	} catch (err) {
+		return thunkAPI.rejectWithValue(err.response.data);
+	}
+});
+
+export const inviteFriend = createAsyncThunk('users/invite-friend', async ({ friend_username, room_id }, thunkAPI) => {
+	const body = JSON.stringify({
+		friend_username,
+		room_id,
+	});
+
+	try {
+		const res = await fetch('/api/users/invite-friend', {
+			method: 'POST',
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
+			},
+			body,
+		});
+
+		const data = await res.json();
+
+		if (res.status === 200) {
+			return data;
+		} else {
+			return thunkAPI.rejectWithValue(data);
+		}
+	} catch (err) {
+		return thunkAPI.rejectWithValue(err.response.data);
+	}
+});
+
 const initialState = {
 	isAuthenticated: false,
 	user: null,
@@ -416,6 +557,10 @@ const initialState = {
 	friends: [],
 	friendRequestsReceived: [],
 	friendRequestsSent: [],
+	createdRoom: null,
+	invitedFriends: [],
+	receivedInvites: [],
+	joinedRoom: null,
 };
 
 const userSlice = createSlice({
@@ -578,6 +723,58 @@ const userSlice = createSlice({
 				state.friends = state.friends.filter(friend => friend.id !== action.meta.arg);
 			})
 			.addCase(removeFriend.rejected, state => {
+				state.loading = false;
+			})
+			.addCase(createRoom.pending, state => {
+				// state.loading = true;
+			})
+			.addCase(createRoom.fulfilled, (state, action) => {
+				state.loading = false;
+				state.createdRoom = action.payload;
+			})
+			.addCase(createRoom.rejected, state => {
+				state.loading = false;
+			})
+			.addCase(getReceivedInvites.pending, state => {
+				// state.loading = true;
+			})
+			.addCase(getReceivedInvites.fulfilled, (state, action) => {
+				state.loading = false;
+				state.receivedInvites = action.payload;
+			})
+			.addCase(getReceivedInvites.rejected, state => {
+				state.loading = false;
+			})
+			.addCase(inviteFriend.pending, state => {
+				// state.loading = true;
+			})
+			.addCase(inviteFriend.fulfilled, (state, action) => {
+				state.loading = false;
+				// state.receivedInvites = action.payload;
+			})
+			.addCase(inviteFriend.rejected, state => {
+				state.loading = false;
+			})
+			.addCase(rejectInvite.pending, state => {
+				// state.loading = true;
+			})
+			.addCase(rejectInvite.fulfilled, (state, action) => {
+				state.loading = false;
+				state.receivedInvites = state.receivedInvites.filter(
+					invite => invite.roomId !== action.meta.arg
+				);
+			})
+			.addCase(rejectInvite.rejected, state => {
+				state.loading = false;
+			})
+			.addCase(joinRoom.pending, state => {
+				// state.loading = true;
+			})
+			.addCase(joinRoom.fulfilled, (state, action) => {
+				state.loading = false;
+				state.joinedRoom = action.payload;
+			})
+			.addCase(joinRoom.rejected, state => {
 				state.loading = false;
 			});
 	},

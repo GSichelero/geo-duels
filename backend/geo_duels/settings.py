@@ -11,10 +11,12 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from datetime import timedelta
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+SETTINGS_PATH = os.path.dirname(os.path.dirname(__file__))
 
 
 # Quick-start development settings - unsuitable for production
@@ -32,6 +34,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,7 +44,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'users',
+    'geo_duels',
 ]
+
+ASGI_APPLICATION = 'geo_duels.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels.layers.InMemoryChannelLayer"
+        },
+        'ROUTING': 'geo_duels.routing.channel_routing',
+    }
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -57,7 +70,11 @@ ROOT_URLCONF = 'geo_duels.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'room', 'templates', 'room'),
+            os.path.join(SETTINGS_PATH, 'templates', 'room'),
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -84,6 +101,14 @@ DATABASES = {
         'PASSWORD': 'ggi2011',
         'HOST': 'localhost',
         'PORT': '5432',
+    },
+    "nonrel": {
+        'ENGINE': 'djongo',
+        'CLIENT': {
+            'host': 'mongodb+srv://gsichelero:VlZU3h4LPgbLasyi@cluster0.yfbab4y.mongodb.net/?retryWrites=true&w=majority',
+            'username': 'gsichelero',
+            'password': 'VlZU3h4LPgbLasyi',
+        }
     }
 }
 

@@ -1,4 +1,5 @@
-from .models import FriendRequest
+from .models import FriendRequest, Room, RoomMember, RoomConfig, Round, Guessings
+from bson.objectid import ObjectId
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -191,3 +192,134 @@ class GetAllUsersView(APIView):
     users = UserSerializer(users, many=True)
 
     return Response(users.data, status=status.HTTP_200_OK)
+
+
+class CreateRoomView(APIView):
+  permission_classes = [permissions.IsAuthenticated]
+
+  def post(self, request):
+    if not Room.objects.using('nonrel').filter(room_name=request.data['room_name']).exists():
+      room = Room(
+          room_name=request.data['room_name'],
+          room_password=request.data['room_password'],
+          room_owner=request.user.nickname,
+          room_state='waiting',
+          room_round=0,
+          is_active=True,
+          room_members=[],
+          invited_users=[],
+          room_configs={
+              'id': 1,
+              'max_members': request.data['max_members'],
+              'number_of_rounds': request.data['number_of_rounds'],
+              'time_per_pick': request.data['time_per_pick'],
+              'time_per_guess': request.data['time_per_guess'],
+              'moving_allowed': request.data['moving_allowed'] == 'true',
+          }   
+      )
+      room.save(using='nonrel')
+      return Response({
+        'roomId': str(room._id),
+        'roomName': room.room_name,
+        'roomPassword': room.room_password,
+        'roomOwner': room.room_owner,
+        'isActive': room.is_active,
+        'roomMembers': room.room_members,
+        'max_members': room.room_configs.get('max_members'),
+        }, status=status.HTTP_200_OK)
+
+    else:
+      return Response({'error': 'Room name already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class InviteFriendView(APIView):
+  permission_classes = [permissions.IsAuthenticated]
+
+  def post(self, request):
+    # receive room id and friend username
+    room_id = ObjectId(request.data['room_id'])
+    friend_username = request.data['friend_username']
+
+    # add the friend username to the invited_users array
+    room = Room.objects.using('nonrel').get(_id=room_id)
+    # if username not already in invited_users.username
+    if friend_username not in [member['username'] for member in room.invited_users]:
+      room.invited_users.append({'id': 1, 'username': friend_username})
+      room.save(using='nonrel')
+
+    return Response({'success': 'Friend invited'}, status=status.HTTP_200_OK)
+
+
+class GetReceivedInvites(APIView):
+  permission_classes = [permissions.IsAuthenticated]
+
+  def get(self, request):
+    # get all rooms where the user nickname is in the list of users invited and the room is active
+    rooms = Room.objects.using('nonrel').filter(invited_users={'username':request.user.nickname}).all()
+
+    # return a list of rooms with the room id, room name, room password, room owner, and room configs
+    return Response([{
+        'roomId': str(room._id),
+        'roomName': room.room_name,
+        'roomPassword': room.room_password,
+        'roomOwner': room.room_owner,
+        'roomConfigs': room.room_configs,
+      } for room in rooms], status=status.HTTP_200_OK)
+
+
+class RejectInviteView(APIView):
+  permission_classes = [permissions.IsAuthenticated]
+
+  def post(self, request):
+    # receive room id
+    room_id = ObjectId(request.data['room_id'])
+
+    # get the room
+    room = Room.objects.using('nonrel').get(_id=room_id)
+
+    # remove the user from the invited users list
+    room.invited_users = [user for user in room.invited_users if user['username'] != request.user.nickname]
+    room.save(using='nonrel')
+
+    return Response({'success': 'Invite rejected'}, status=status.HTTP_200_OK)
+
+
+class JoinRoomView(APIView):
+  permission_classes = [permissions.IsAuthenticated]
+  
+  def post(self, request):
+    # receive room id
+    room_id = request.data['room_name']
+    room_password = request.data['room_password']
+
+    # get the room with name and password
+    room = Room.objects.using('nonrel').get(room_name=room_id, room_password=room_password)
+    
+    # if user.nickname not already in the username field inside the list of room_member, add the user to the room members list
+    if len(room.room_members) < room.room_configs.get('max_members') and request.user.nickname not in [member['username'] for member in room.room_members]:
+      room.room_members.append({
+        'id': 1,
+        'user_number': len(room.room_members) + 1,
+        'username': request.user.nickname,
+        'score': 0,
+        'is_ready': True,
+      })
+
+      # save the room
+      room.save(using='nonrel')
+
+      return Response({
+        'room_id': room._id,
+        'room_name': room.room_name,
+        'room_password': room.room_password
+        }, status=status.HTTP_200_OK)
+
+    elif request.user.nickname in [member['username'] for member in room.room_members]:
+      return Response({
+        'room_id': room._id,
+        'room_name': room.room_name,
+        'room_password': room.room_password
+        }, status=status.HTTP_200_OK)
+
+    else:
+      return Response({'error': 'Room is full'}, status=status.HTTP_400_BAD_REQUEST)

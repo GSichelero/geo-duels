@@ -11,6 +11,7 @@ const registerRoute = require('./routes/auth/register');
 const verifyRoute = require('./routes/auth/verify');
 const usersRoute = require('./routes/friends/users');
 const friendsRoute = require('./routes/friends/friends')
+const roomsRoute = require('./routes/friends/rooms');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(registerRoute);
 app.use(verifyRoute);
 app.use(usersRoute);
 app.use(friendsRoute);
+app.use(roomsRoute);
 
 app.use(express.static('client/build'));
 app.get('*', (req, res) => {
