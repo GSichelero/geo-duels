@@ -2,11 +2,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import Layout from 'components/Layout';
-import { getFriends, inviteFriend } from 'features/user';
+import { getFriends, inviteFriend, joinRoom } from 'features/user';
 
 const InviteFriendsPage = () => {
     const dispatch = useDispatch();
-	const { isAuthenticated, user, loading, friends, users, friendRequestsReceived, friendRequestsSent, createdRoom } = useSelector(state => state.user);
+	const { isAuthenticated, user, loading, friends, users, friendRequestsReceived, friendRequestsSent, createdRoom, joinedRoom } = useSelector(state => state.user);
 
     useEffect(() => {
         dispatch(getFriends());
@@ -15,7 +15,7 @@ const InviteFriendsPage = () => {
 	if (!isAuthenticated && !loading && user === null)
 		return <Navigate to='/login' />;
 
-    console.log(createdRoom.roomId);
+    if (isAuthenticated && joinedRoom) return <Navigate to='/match' />;
 
     return (
         <Layout title='Geo Duels | All users' content='All users page'>
@@ -43,6 +43,10 @@ const InviteFriendsPage = () => {
                             ))}
                         </table>
                         </ul>
+                        <button className='mt-5 text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+                        onClick={() => dispatch(joinRoom({ 'room_name':createdRoom.roomName, 'room_password':createdRoom.roomPassword }))}>
+                            Play
+                        </button>
                     </div>
                 </div>
                 </>

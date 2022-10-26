@@ -110,6 +110,10 @@ class RoomMember(mongo_models.Model):
   username = mongo_models.CharField(max_length=15, blank=False, null=False, unique=True, validators=[MinLengthValidator(3)])
   score = mongo_models.IntegerField(default=0)
   is_ready = mongo_models.BooleanField(default=False)
+  rounds = mongo_models.ArrayField(
+    model_container=Round,
+    model_form_class=Round,
+  )
 
 class RoomConfig(mongo_models.Model):
   id = mongo_models.ObjectIdField(default=1)

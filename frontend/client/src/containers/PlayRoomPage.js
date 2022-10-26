@@ -6,7 +6,7 @@ import Layout from 'components/Layout';
 
 const PlayRoomPage = () => {
 	const dispatch = useDispatch();
-	const { isAuthenticated, user, loading, registered, createdRoom, friends, users, friendRequestsReceived, friendRequestsSent } = useSelector(
+	const { isAuthenticated, user, loading, registered, createdRoom, friends, users, friendRequestsReceived, friendRequestsSent, joinedRoom } = useSelector(
 		state => state.user
 	);
 
@@ -32,6 +32,8 @@ const PlayRoomPage = () => {
 	if (!isAuthenticated && !loading && user === null)
 		return <Navigate to='/login' />;
 
+	if (isAuthenticated && joinedRoom) return <Navigate to='/match' />;
+	
 	return (
 		<Layout title='Geo Duels | Login' content='Login page'>
 			<h1 className='text-4xl font-bold text-white text-center m-5'>Enter a Match</h1>

@@ -1,6 +1,9 @@
 import json
 
 from channels.generic.websocket import AsyncWebsocketConsumer
+from asgiref.sync import sync_to_async
+
+from users.models import FriendRequest, Room, RoomMember, RoomConfig, Round, Guessings
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -8,10 +11,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_group_name = "chat_%s" % self.room_name
 
-        # Join room group
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        self.password = self.scope["query_string"].decode("utf-8").split("password=")[1].split("&")[0]
+        self.nickname = self.scope["query_string"].decode("utf-8").split("username=")[1]
 
-        await self.accept()
+        self.room = await sync_to_async(Room.objects.using('nonrel').get)(room_name=self.room_name, room_password=self.password)
+
+        if any(user['username'] == self.nickname for user in self.room.room_members):
+            # Join room group
+            await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+
+            await self.accept()
 
     async def disconnect(self, close_code):
         # Leave room group

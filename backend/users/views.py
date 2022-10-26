@@ -3,7 +3,7 @@ from bson.objectid import ObjectId
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
-from .serializers import FriendRequestSerializer, User, UserCreateSerializer, UserSerializer
+from .serializers import FriendRequestSerializer, User, UserCreateSerializer, UserSerializer, RoomSerializer
 
 
 class RegisterView(APIView):
@@ -289,11 +289,11 @@ class JoinRoomView(APIView):
   
   def post(self, request):
     # receive room id
-    room_id = request.data['room_name']
+    room_name = request.data['room_name']
     room_password = request.data['room_password']
 
     # get the room with name and password
-    room = Room.objects.using('nonrel').get(room_name=room_id, room_password=room_password)
+    room = Room.objects.using('nonrel').get(room_name=room_name, room_password=room_password)
     
     # if user.nickname not already in the username field inside the list of room_member, add the user to the room members list
     if len(room.room_members) < room.room_configs.get('max_members') and request.user.nickname not in [member['username'] for member in room.room_members]:
@@ -308,18 +308,10 @@ class JoinRoomView(APIView):
       # save the room
       room.save(using='nonrel')
 
-      return Response({
-        'room_id': room._id,
-        'room_name': room.room_name,
-        'room_password': room.room_password
-        }, status=status.HTTP_200_OK)
+      return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
 
     elif request.user.nickname in [member['username'] for member in room.room_members]:
-      return Response({
-        'room_id': room._id,
-        'room_name': room.room_name,
-        'room_password': room.room_password
-        }, status=status.HTTP_200_OK)
+      return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
 
     else:
       return Response({'error': 'Room is full'}, status=status.HTTP_400_BAD_REQUEST)

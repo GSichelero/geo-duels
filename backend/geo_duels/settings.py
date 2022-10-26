@@ -70,11 +70,7 @@ ROOT_URLCONF = 'geo_duels.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(BASE_DIR, 'templates'),
-            os.path.join(BASE_DIR, 'room', 'templates', 'room'),
-            os.path.join(SETTINGS_PATH, 'templates', 'room'),
-            ],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
