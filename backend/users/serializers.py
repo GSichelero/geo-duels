@@ -84,7 +84,7 @@ class RoomMemberSerializer(serializers.ModelSerializer):
 class FriendInvitedSerializer(serializers.ModelSerializer):
   class Meta:
     model = FriendInvited
-    fields = ('username')
+    fields = ['username']
 
 class RoomConfigSerializer(serializers.ModelSerializer):
   class Meta:
@@ -98,4 +98,4 @@ class RoomSerializer(serializers.ModelSerializer):
 
   class Meta:
     model = Room
-    fields = ['_id', 'room_name', 'room_password', 'room_owner', 'room_state', 'room_round', 'is_active', 'invited_users', 'room_members', 'room_configs']
+    fields = ['_id', 'room_name', 'room_password', 'room_owner', 'room_state', 'room_round', 'player_turn', 'room_deadline_time', 'is_active', 'invited_users', 'room_members', 'room_configs']

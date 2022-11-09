@@ -78,9 +78,6 @@ class GeoPoint(mongo_models.Model):
   lat = mongo_models.FloatField()
   lng = mongo_models.FloatField()
 
-  class Meta:
-    abstract = True
-
   def __str__(self):
     return f'({self.lat}, {self.lng})'
 
@@ -135,6 +132,8 @@ class Room(mongo_models.Model):
   room_owner = mongo_models.TextField(max_length=15)
   room_state = mongo_models.TextField(max_length=30)
   room_round = mongo_models.IntegerField(default=0)
+  player_turn = mongo_models.IntegerField(default=0)
+  room_deadline_time = mongo_models.FloatField(default=0)
   is_active = mongo_models.BooleanField(default=True)
   invited_users = mongo_models.ArrayField(
     model_container=FriendInvited,

@@ -547,6 +547,12 @@ export const inviteFriend = createAsyncThunk('users/invite-friend', async ({ fri
 	}
 });
 
+export const updateRoomValues = createAsyncThunk('users/update-room-values', async ({ newRoom }, thunkAPI) => {
+	return newRoom;
+});
+
+
+
 const initialState = {
 	isAuthenticated: false,
 	user: null,
@@ -561,6 +567,7 @@ const initialState = {
 	invitedFriends: [],
 	receivedInvites: [],
 	joinedRoom: null,
+	roomMatchValues: null,
 };
 
 const userSlice = createSlice({
@@ -775,6 +782,16 @@ const userSlice = createSlice({
 				state.joinedRoom = action.payload;
 			})
 			.addCase(joinRoom.rejected, state => {
+				state.loading = false;
+			})
+			.addCase(updateRoomValues.pending, state => {
+				// state.loading = true;
+			})
+			.addCase(updateRoomValues.fulfilled, (state, action) => {
+				state.loading = false;
+				state.roomMatchValues = action.payload;
+			})
+			.addCase(updateRoomValues.rejected, state => {
 				state.loading = false;
 			});
 	},

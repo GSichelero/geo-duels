@@ -205,6 +205,8 @@ class CreateRoomView(APIView):
           room_owner=request.user.nickname,
           room_state='waiting',
           room_round=0,
+          player_turn=0,
+          room_deadline_time=0,
           is_active=True,
           room_members=[],
           invited_users=[],
@@ -302,7 +304,8 @@ class JoinRoomView(APIView):
         'user_number': len(room.room_members) + 1,
         'username': request.user.nickname,
         'score': 0,
-        'is_ready': True,
+        'is_ready': False,
+        'rounds': [],
       })
 
       # save the room
