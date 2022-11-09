@@ -159,7 +159,7 @@ function MyMapStreetComponentPick({
         </button>
       </div>
     );
-  }
+}
 
 function MyMapStreetComponentGuess({
     fenway,
@@ -232,13 +232,103 @@ function MyMapStreetComponentGuess({
     );
 }
 
+function MyMapComponentResult({
+    fenway,
+    roomMatchValues
+  }) {
+    const refMapResult = useRef();
+    let playerName = roomMatchValues.room_members.find((player) => player.user_number == roomMatchValues.player_turn).username;
+    let playerTurnRoundPick = roomMatchValues.room_members.find((player) => player.user_number == roomMatchValues.player_turn).rounds.find((round) => round.round_number == roomMatchValues.room_round).picking;
+    let lat = playerTurnRoundPick.lat;
+    let lng = playerTurnRoundPick.lng;
+    let correctPosition = new window.google.maps.LatLng(lat, lng);
+    let updated = false;
+  
+    useEffect(() => {
+      if (!updated) {
+          map = new window.google.maps.Map(refMapResult.current, {
+              center: fenway,
+              zoom: 2,
+              panControl: false,
+              zoomControl: true,
+              fullscreenControl: false,
+              streetViewControl: false
+          });
+  
+          roomMatchValues.room_members.forEach(function(room_member) {
+              if (room_member.username == playerName) {
+                  marker = new window.google.maps.Marker({
+                      position: correctPosition,
+                      title:room_member.username,
+                      label: {
+                        text: playerName,
+                        fontWeight: 'bold'
+                      },
+                      icon: {
+                        url: "http://maps.google.com/mapfiles/kml/pal3/icon31.png",
+                        labelOrigin: new window.google.maps.Point(8, -5)
+                      }
+                    });
+                    marker.setMap(map);
+              }
+              else {
+                  let geoPoint = room_member.rounds.find((round) => round.round_number == roomMatchValues.room_round).guessings.find((guessing) => guessing.guess_number == roomMatchValues.player_turn);
+                  let lat = geoPoint.guess_geopoint.lat;
+                  let lng = geoPoint.guess_geopoint.lng;
+                  let latLngPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
+                  let random = Math.floor(Math.random() * icons.length);
+                  marker = new window.google.maps.Marker({
+                      position: latLngPosition,
+                      title:room_member.username,
+                      label: {
+                        text: room_member.username,
+                        fontWeight: 'bold'
+                      },
+                      icon: {
+                        url: icons[random],
+                        labelOrigin: new window.google.maps.Point(8, -5)
+                      }
+                    });
+                    marker.setMap(map);
+              }
+          });
+          updated = true;
+      }
+    });
+  
+    return (
+      <div id="mapsContainer">
+        <div ref={refMapResult} id="mapResult" />
+        {
+            roomMatchValues.room_members.map(function(room_member) {
+              if (room_member.username == playerName) {
+                return (<h2 className="text-white font-bold">Location chosen by: {room_member.username}</h2>)
+              }
+              else {
+                let geoPoint = room_member.rounds.find((round) => round.round_number == roomMatchValues.room_round).guessings.find((guessing) => guessing.guess_number == roomMatchValues.player_turn);;
+                let lat = geoPoint.guess_geopoint.lat;
+                let lng = geoPoint.guess_geopoint.lng;
+                let latLngPosition = new window.google.maps.LatLng(lat, lng);
+                let distanceFromCorrectPlace = window.google.maps.geometry.spherical.computeDistanceBetween(correctPosition, latLngPosition);
+                let score = 10000 - ((Math.log(distanceFromCorrectPlace) / Math.log(2)) * 400);
+                if (score < 0) {
+                    score = 0;
+                }
+                else if (score > 10000) {
+                score = 10000;
+                }
+                return (<h2 className="text-white font-bold">{room_member.username}: {Math.round(score)} Points! ------ Distance error: {Math.round(distanceFromCorrectPlace / 1000)}Km ({Math.round(distanceFromCorrectPlace)}m)</h2>)
+              }
+          })}
+      </div>
+    );
+}
+
 function MyMapComponentEndGame({
   fenway,
-  docData
+  roomMatchValues
 }) {
     const refMap = useRef();
-    let map;
-    let marker;
 
     useEffect(() => {
         map = new window.google.maps.Map(refMap.current, {
@@ -251,22 +341,18 @@ function MyMapComponentEndGame({
         });
 
         let icon_index = 0;
-        let player_number = 1;
-        Object.keys(docData['docData']['playersInfo']).sort().forEach(function(player_name) {
-            let key = docData['docData']['playersInfo'][player_name];
-            for( let i=0; i< Object.keys(key).length; i++ ) {
-                let round = key[Object.keys(key).sort()[i]];
-                let geoPoint = Object.values(round['picking']);
-                let lat = geoPoint[0];
-                let lng = geoPoint[1];
+        roomMatchValues.room_members.forEach(function(picker_room_member) {
+            for( let i=1; i<=roomMatchValues.room_configs.number_of_rounds; i++ ) {
+                let geoPoint = picker_room_member.rounds.find((round) => round.round_number == i).picking;
+                let lat = geoPoint.lat;
+                let lng = geoPoint.lng;
                 let latLngPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
-                let random = Math.floor(Math.random() * iconsBig.length);
 
                 marker = new window.google.maps.Marker({
                     position: latLngPosition,
-                    title:player_name,
+                    title:picker_room_member.username,
                     label: {
-                    text: player_name,
+                    text: picker_room_member.username,
                     fontWeight: 'bold'
                     },
                     icon: {
@@ -277,21 +363,18 @@ function MyMapComponentEndGame({
                 });
                 marker.setMap(map);
 
-                
-                Object.keys(docData['docData']['playersInfo']).sort().forEach(function(new_player_name) {
-                    if (new_player_name != player_name) {
-                        let key_new = docData['docData']['playersInfo'][new_player_name];
-                        let guesser_round = key_new[Object.keys(key_new).sort()[i]];
-                        let geoPoint = Object.values(guesser_round['guessings'][player_number]);
-                        let lat = geoPoint[0];
-                        let lng = geoPoint[1];
+                roomMatchValues.room_members.forEach(function(guesser_room_member) {
+                    if (guesser_room_member.user_number != picker_room_member.user_number) {
+                        let geoPoint = guesser_room_member.rounds.find((round) => round.round_number == i).guessings.find((guessing) => guessing.guess_number == picker_room_member.user_number);
+                        let lat = geoPoint.guess_geopoint.lat;
+                        let lng = geoPoint.guess_geopoint.lng;
                         let latLngPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
 
                         marker = new window.google.maps.Marker({
                             position: latLngPosition,
-                            title:new_player_name,
+                            title:guesser_room_member.username,
                             label: {
-                            text: new_player_name,
+                            text: guesser_room_member.username,
                             fontWeight: 'bold'
                             },
                             icon: {
@@ -304,37 +387,34 @@ function MyMapComponentEndGame({
                 });
                 icon_index++;
             }
-            player_number++;
         });
     });
-    let player_number = 1;
 
     function playAgain() {
-        return <Navigate to="/play"/>
+        return <Navigate to="/play"/>;
     }
 
     return (
         <div id="mapsContainer">
           <div ref={refMap} id="mapResult" />
           {
-            Object.keys(docData['docData']['playersInfo']).sort().map(function(player_name) {
-                var playerScore = 0;
-                var playerDistance = 0;
-                var guessingsCount = 0;
-                let key = docData['docData']['playersInfo'][player_name];
-                for( let i=0; i<Object.keys(key).length; i++ ) {
-                    let round = key[Object.keys(key).sort()[i]];
-                    for( let j=0; j<Object.keys(round['guessings']).length; j++ ) {
-                        if (key != docData['docData']['playersInfo'][Object.keys(docData['docData']['playersInfo']).sort()[j]]){
-                            let geoPoint = Object.values(round['guessings'][`${j + 1}`]);
-                            let lat = geoPoint[0];
-                            let lng = geoPoint[1];
+            roomMatchValues.room_members.map(function(room_member) {
+                let playerScore = 0;
+                let playerDistance = 0;
+                let guessingsCount = 0;
+                for( let i=1; i<=roomMatchValues.room_configs.number_of_rounds; i++ ) {
+                    let round = room_member.rounds.find((round) => round.round_number == i);
+                    for( let j=1; j<=roomMatchValues.room_configs.max_members; j++ ) {
+                        if (room_member.user_number != j) {
+                            let geoPoint = round.guessings.find((guessing) => guessing.guess_number == j);
+                            let lat = geoPoint.guess_geopoint.lat
+                            let lng = geoPoint.guess_geopoint.lng
                             let selectedPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
     
-                            let playerPicker = docData['docData']['playersInfo'][Object.keys(docData['docData']['playersInfo']).sort()[j]];
-                            let pick = Object.values(playerPicker[Object.keys(playerPicker).sort()[i]]['picking']);
-                            let latPick = pick[0];
-                            let lngPick = pick[1];
+                            let playerPicker = roomMatchValues.room_members.find((member) => member.user_number == j);
+                            let pick = playerPicker.rounds.find((round) => round.round_number == i).picking;
+                            let latPick = pick.lat;
+                            let lngPick = pick.lng;
                             let pickedPosition = { lat: parseFloat(latPick), lng: parseFloat(lngPick) };
     
                             let distanceFromCorrectPlace = window.google.maps.geometry.spherical.computeDistanceBetween(pickedPosition, selectedPosition);
@@ -354,10 +434,12 @@ function MyMapComponentEndGame({
                 }
                 let meanDistance = playerDistance / guessingsCount;
                 let meanScore = playerScore / guessingsCount;
-                return (<h2>{player_name}: {Math.round(playerScore)} Points! ------ {Math.round(playerDistance / 1000)}Km of error in total! ------ Average score: {Math.round(meanScore)} ------ Average distance error: {Math.round(meanDistance / 1000)}Km ({Math.round(meanDistance)}m)</h2>)
+                return (<h2 className="text-white font-bold">{room_member.username}: {Math.round(playerScore)} Points! ------ {Math.round(playerDistance / 1000)}Km of error in total! ------ Average score: {Math.round(meanScore)} ------ Average distance error: {Math.round(meanDistance / 1000)}Km ({Math.round(meanDistance)}m)</h2>)
             })
             }
-            <button className="ready" onClick={playAgain}>Play another Game!</button>
+            <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+                onClick={playAgain}>Play another Game!
+            </button>
         </div>
       );
 }
@@ -543,7 +625,17 @@ const MatchRoomPage = () => {
             return (
                 <div id="mapsContainer">
                     <Wrapper apiKey={process.env.MAPS_API_KEY} render={render} libraries={["geometry"]}>
-                        <MyMapComponentEndGame fenway={center}/>
+                        <MyMapComponentEndGame fenway={center} roomMatchValues={roomMatchValues}/>
+                    </Wrapper>
+                </div>
+            );
+        }
+
+        else if (roomMatchValues.room_state == 'endgame') {
+            return (
+                <div id="mapsContainer">
+                    <Wrapper apiKey={process.env.MAPS_API_KEY} render={render} libraries={["geometry"]}>
+                        <MyMapComponentEndGame fenway={center} roomMatchValues={roomMatchValues}/>
                     </Wrapper>
                 </div>
             );

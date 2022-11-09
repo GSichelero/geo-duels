@@ -111,7 +111,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lng"] = text_data_json["guess"]["lng"]
                             break
                     await sync_to_async(self.room.save)(using='nonrel')
-                    
+
             if current_time.timestamp() > self.room.room_deadline_time and not all(get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] for user in self.room.room_members):
                 for user in self.room.room_members:
                         if user["username"] == self.nickname:
@@ -151,8 +151,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             }
                         })
                 else:
-                    # move to results phase
-                    self.room.room_state = "results"
+                    # move to endgame phase
+                    self.room.room_state = "endgame"
 
                 await sync_to_async(self.room.save)(using='nonrel')
                 await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message","room": self.room})
