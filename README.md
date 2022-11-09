@@ -12,7 +12,7 @@
 - Backend: Python
 - Framework WEB: React
 - Framework Backend: Django
-- Banco de Dados: PostgreSQL, MongoDB
+- Banco de Dados: PostgreSQL e MongoDB
 - Comunicação: REST API e WebSockets
 - Visualização do mapa e das localizações: Google Maps e Google Street View APIs.
 
