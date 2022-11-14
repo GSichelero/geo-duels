@@ -33,19 +33,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        print(text_data_json)
         current_time = datetime.utcnow()
         self.room = await sync_to_async(Room.objects.using('nonrel').get)(room_name=self.room_name, room_password=self.password)
-
         if self.room.room_state == "waiting":
-            print(self.room)
             if "ready" in text_data_json:
                 for user in self.room.room_members:
                     if user["username"] == self.nickname:
                         user["is_ready"] = True
                         break
                 await sync_to_async(self.room.save)(using='nonrel')
-            print(self.room, all(user["is_ready"] for user in self.room.room_members), len(self.room.room_members) == self.room.room_configs["max_members"])
             if all(user["is_ready"] for user in self.room.room_members) and len(self.room.room_members) == self.room.room_configs["max_members"]:
                 # move to picking phase, round 1
                 self.room.room_state = "picking"
@@ -63,8 +59,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             "lng": None,
                         }
                     })
-                await sync_to_async(self.room.save)(using='nonrel')
-                await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message","room": self.room})
+            await sync_to_async(self.room.save)(using='nonrel')
+            await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message","room": self.room})
 
 
         elif self.room.room_state == "picking":
@@ -77,13 +73,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             break
                     await sync_to_async(self.room.save)(using='nonrel')
 
-            if current_time.timestamp() > self.room.room_deadline_time and not all(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["picking"]["lat"] for user in self.room.room_members):
+            if current_time.timestamp() >= self.room.room_deadline_time and not all(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["picking"]["lat"] for user in self.room.room_members):
                 for user in self.room.room_members:
                         if user["username"] == self.nickname:
                             if not get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["picking"]["lat"]:
                                 get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["picking"]["lat"] = 0
                                 get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["picking"]["lng"] = 0
-            if current_time.timestamp() > self.room.room_deadline_time or all(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["picking"]["lat"] for user in self.room.room_members):
+            if current_time.timestamp() >= self.room.room_deadline_time or all(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["picking"]["lat"] for user in self.room.room_members):
                 # move to guessing phase, player_turn 1
                 self.room.room_state = "guessing"
                 self.room.room_deadline_time = (current_time + timedelta(seconds=self.room.room_configs["time_per_guess"])).timestamp()
@@ -103,6 +99,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         
         elif self.room.room_state == "guessing":
+            print(current_time.timestamp(), self.room.room_deadline_time, all(get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] for user in self.room.room_members))
             if current_time.timestamp() <= self.room.room_deadline_time:
                 if "guess" in text_data_json:
                     for user in self.room.room_members:
@@ -112,16 +109,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
                             break
                     await sync_to_async(self.room.save)(using='nonrel')
 
-            if current_time.timestamp() > self.room.room_deadline_time and not all(get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] for user in self.room.room_members):
+            if current_time.timestamp() >= self.room.room_deadline_time and not all(get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] for user in self.room.room_members):
                 for user in self.room.room_members:
                         if user["username"] == self.nickname:
                             if not get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"]:
                                 get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] = 0
                                 get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] = 0
             
-            if current_time.timestamp() > self.room.room_deadline_time or all(get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] for user in self.room.room_members):
+            if current_time.timestamp() >= self.room.room_deadline_time or all(get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] for user in self.room.room_members):
+                # move to results phase
+                self.room.room_state = "results"
+                self.room.room_deadline_time = (current_time + timedelta(seconds=15)).timestamp()
+                await sync_to_async(self.room.save)(using='nonrel')
+                await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message","room": self.room})
+        
+        elif self.room.room_state == "results":
+            if current_time.timestamp() >= self.room.room_deadline_time:
                 if self.room.player_turn < self.room.room_configs["max_members"]:
                     # move to guessing phase, next player_turn
+                    self.room.room_state = "guessing"
                     self.room.player_turn = self.room.player_turn + 1
                     self.room.room_deadline_time = (current_time + timedelta(seconds=self.room.room_configs["time_per_guess"])).timestamp()
                     for user in self.room.room_members:
@@ -159,7 +165,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
     async def chat_message(self, event):
-        print(event)
         room = event["room"]
         
         await self.send(text_data=json.dumps({"room": RoomSerializer(room).data}))

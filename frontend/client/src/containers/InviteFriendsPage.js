@@ -2,6 +2,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import Layout from 'components/Layout';
+import ClosingAlert from 'components/Alert';
 import { getFriends, inviteFriend, joinRoom } from 'features/user';
 
 const InviteFriendsPage = () => {
@@ -25,6 +26,7 @@ const InviteFriendsPage = () => {
                 </div>
             ) : (
                 <>
+                <ClosingAlert text={'Here you can invite your friends to join the match you have just started!'} color={'pink'} />
                 <div className='grid grid-cols-2 justify-center'>
                     <div className='justify-center'>
                         <h1 className='mb-5 text-white text-3xl font-bold'>Your Friends</h1>

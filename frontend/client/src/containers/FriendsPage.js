@@ -2,6 +2,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import Layout from 'components/Layout';
+import ClosingAlert from 'components/Alert';
 import { getFriends, sendFriendRequest, getAllUsers, getFriendRequestsReceived, getFriendRequestsSent, cancelFriendRequest, rejectFriendRequest, acceptFriendRequest, removeFriend } from 'features/user';
 
 const UsersPage = () => {
@@ -24,6 +25,7 @@ const UsersPage = () => {
                 </div>
             ) : (
                 <>
+                <ClosingAlert text={'Here you can see all your friends and the friend requests you have received!'} color={'yellow'} />
                 <div className='grid grid-cols-2 justify-center'>
                     <div className='justify-center'>
                         <h1 className='mb-5 text-white text-3xl font-bold'>Your Friends</h1>
@@ -33,7 +35,7 @@ const UsersPage = () => {
                                 <tr className=' focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center'>
                                     <td className='text-white font-bold text-bold text-center'>{friend.nickname}</td>
                                     <td>
-                                        <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+                                        <button className='text-white text-bold bg-red-600 hover:bg-red-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
                                         onClick={() => dispatch(removeFriend(friend.id))}>
                                             Remove friend
                                         </button>
@@ -57,7 +59,7 @@ const UsersPage = () => {
                                         </button>
                                     </td>
                                     <td>
-                                        <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+                                        <button className='text-white text-bold bg-red-600 hover:bg-red-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
                                         onClick={() => dispatch(rejectFriendRequest(friend.id))}>
                                             Reject
                                         </button>

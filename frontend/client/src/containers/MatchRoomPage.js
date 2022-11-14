@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import Layout from 'components/Layout';
-import { getFriends, createRoom, updateRoomValues } from 'features/user';
+import ClosingAlert from 'components/Alert';
+import { updateRoomValues } from 'features/user';
 import useWebSocket from 'react-use-websocket';
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 
@@ -63,34 +64,7 @@ for (let i = 1; i <= 10; i++) {
     iconsSmall.push(`http://maps.google.com/mapfiles/kml/paddle/${i}-lv.png`);
 }
 
-function shuffle(obj1, obj2) {
-    let index = obj1.length;
-    let rnd, tmp1, tmp2;
-  
-    while (index) {
-      rnd = Math.floor(Math.random() * index);
-      index -= 1;
-      tmp1 = obj1[index];
-      tmp2 = obj2[index];
-      obj1[index] = obj1[rnd];
-      obj2[index] = obj2[rnd];
-      obj1[rnd] = tmp1;
-      obj2[rnd] = tmp2;
-    }
-}
-
-function MyMapComponent({center, zoom}) {
-    const ref = useRef();
-  
-    useEffect(() => {
-      new window.google.maps.Map(ref.current, {center,zoom});
-    });
-  
-    return <div ref={ref} id="map" />;
-}
-
-
-let selectedLocation = { lat: -31.55542202732198, lng: -54.54408893196694 };
+let selectedLocation = { lat: 0, lng: 0 };
 let panorama;
 let map;
 let marker;
@@ -111,7 +85,7 @@ function MyMapStreetComponentPick({
             panControl: false,
             zoomControl: true,
             fullscreenControl: false,
-            // streetViewControl: false
+            streetViewControl: true
         });
         panorama = new window.google.maps.StreetViewPanorama(refPano.current, {
             position: fenway,
@@ -299,12 +273,18 @@ function MyMapComponentResult({
     return (
       <div id="mapsContainer">
         <div ref={refMapResult} id="mapResult" />
+        <table className="min-w-full">
+            <thead>
+                <tr>
+                    <th className='text-white font-bold text-bold text-center py-3'>Player</th>
+                    <th className='text-white font-bold text-bold text-center py-3'>Points</th>
+                    <th className='text-white font-bold text-bold text-center py-3'>Distance Error</th>
+                </tr>
+            </thead>
+            <tbody>
         {
             roomMatchValues.room_members.map(function(room_member) {
-              if (room_member.username == playerName) {
-                return (<h2 className="text-white font-bold">Location chosen by: {room_member.username}</h2>)
-              }
-              else {
+              if (room_member.username != playerName) {
                 let geoPoint = room_member.rounds.find((round) => round.round_number == roomMatchValues.room_round).guessings.find((guessing) => guessing.guess_number == roomMatchValues.player_turn);;
                 let lat = geoPoint.guess_geopoint.lat;
                 let lng = geoPoint.guess_geopoint.lng;
@@ -317,9 +297,17 @@ function MyMapComponentResult({
                 else if (score > 10000) {
                 score = 10000;
                 }
-                return (<h2 className="text-white font-bold">{room_member.username}: {Math.round(score)} Points! ------ Distance error: {Math.round(distanceFromCorrectPlace / 1000)}Km ({Math.round(distanceFromCorrectPlace)}m)</h2>)
+                return (
+                    <tr className=' focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
+                        <td className='text-white font-bold text-bold text-center py-1'>{room_member.username}</td>
+                        <td className='text-white font-bold text-bold text-center py-1'>{(score / 100).toFixed(1)}</td>
+                        <td className='text-white font-bold text-bold text-center py-1'>{Math.round(distanceFromCorrectPlace / 1000)}Km ({Math.round(distanceFromCorrectPlace)}m)</td>
+                    </tr>
+                );
               }
           })}
+            </tbody>
+        </table>
       </div>
     );
 }
@@ -391,12 +379,24 @@ function MyMapComponentEndGame({
     });
 
     function playAgain() {
+        window.location.reload();
         return <Navigate to="/play"/>;
     }
 
     return (
         <div id="mapsContainer">
           <div ref={refMap} id="mapResult" />
+          <table className="min-w-full">
+            <thead>
+                <tr>
+                    <th className='text-white font-bold text-bold text-center py-3'>Player</th>
+                    <th className='text-white font-bold text-bold text-center py-3'>Average Score</th>
+                    <th className='text-white font-bold text-bold text-center py-3'>Average Distance Error</th>
+                    <th className='text-white font-bold text-bold text-center py-3'>Total Score</th>
+                    <th className='text-white font-bold text-bold text-center py-3'>Total Distance Error</th>
+                </tr>
+            </thead>
+            <tbody>
           {
             roomMatchValues.room_members.map(function(room_member) {
                 let playerScore = 0;
@@ -434,9 +434,18 @@ function MyMapComponentEndGame({
                 }
                 let meanDistance = playerDistance / guessingsCount;
                 let meanScore = playerScore / guessingsCount;
-                return (<h2 className="text-white font-bold">{room_member.username}: {Math.round(playerScore)} Points! ------ {Math.round(playerDistance / 1000)}Km of error in total! ------ Average score: {Math.round(meanScore)} ------ Average distance error: {Math.round(meanDistance / 1000)}Km ({Math.round(meanDistance)}m)</h2>)
-            })
-            }
+                return (
+                                <tr className=' focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
+                                    <td className='text-white font-bold text-bold text-center py-1'>{room_member.username}</td>
+                                    <td className='text-white font-bold text-bold text-center py-1'>{(meanScore / 100).toFixed(1)}</td>
+                                    <td className='text-white font-bold text-bold text-center py-1'>{Math.round(meanDistance / 1000)}Km ({Math.round(meanDistance)}m)</td>
+                                    <td className='text-white font-bold text-bold text-center py-1'>{(playerScore / 100).toFixed(1)}</td>
+                                    <td className='text-white font-bold text-bold text-center py-1'>{Math.round(playerDistance / 1000)}Km ({Math.round(playerDistance)}m)</td>
+                                </tr>
+                );
+            })}
+                </tbody>
+            </table>
             <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
                 onClick={playAgain}>Play another Game!
             </button>
@@ -463,7 +472,7 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
             const timer = () => setTimeout(() => setSeconds(seconds - 1), 1000);
             const timerId = timer();
             if (state == 'guessing') {
-                setSecondPhrase(`Location chosen by: ${roundPlayerName}!`)
+                setSecondPhrase(`Location chosen by: ${roundPlayerName}!`);
                 if (userName == roundPlayerName) {
                     setSubmitPhrase('The other players are guessing your location, wait a little!');
                 }
@@ -474,6 +483,10 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
             else if (state == 'picking') {
                 setSecondPhrase('The other players will have to guess the location you choose!');
                 setSubmitPhrase('Pick a location!');
+            }
+            else if (state == 'results') {
+                setSecondPhrase('Just wait a little!');
+                setSecondPhrase(`Location chosen by: ${roundPlayerName}!`)
             }
             return () => {
                 clearTimeout(timerId);
@@ -487,6 +500,9 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
             else if (state == 'picking') {
                 sendMessage(JSON.stringify({ 'pick': {'lat': 0, 'lng': 0} }));
             }
+            else if (state == 'results') {
+                sendMessage(JSON.stringify({ 'results': {'lat': 0, 'lng': 0} }));
+            }
             setSubmitPhrase('Your chosen location was sent!');
         }
     });
@@ -498,6 +514,9 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
         else if (state == 'picking') {
             sendMessage(JSON.stringify({ 'pick': {'lat': selectedLocation.lat(), 'lng': selectedLocation.lng()} }));
         }
+        else if (state == 'results') {
+            sendMessage(JSON.stringify({ 'results': {'lat': 0, 'lng': 0} }));
+        }
         setSubmitPhrase('Your chosen location was sent!');
     }
 
@@ -505,7 +524,7 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
         <div>
         <h2 className="text-white font-bold">{`Time left: ${seconds} seconds! ${submitPhrase}`}</h2>
         <h2 className="text-white font-bold">{`${secondPhrase}`}</h2>
-        <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+        <button className='text-white text-bold bg-green-600 hover:bg-green-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
             onClick={iAmReady}>Send Location!
         </button>
         </div>
@@ -528,8 +547,7 @@ const MatchRoomPage = () => {
         user_nickname = user.nickname;
     }
 
-    const center = { lat: -34.397, lng: 150.644 };
-    const zoom = 4;
+    const center = { lat: 0, lng: 0 };
 
     const ref = React.useRef(null);
     const [map, setMap] = React.useState();
@@ -555,24 +573,31 @@ const MatchRoomPage = () => {
     const WrapperMaps = React.useMemo(() => {
         if (!roomMatchValues) {
             return (
-                <h2 className="text-white font-bold">Click on the Play tab</h2>
+                <ClosingAlert text={'Click on the Play tab!'} color={'red'} />
             );
         }
 
         else if (roomMatchValues.room_state == 'waiting') {
-            console.log(roomMatchValues);
             let playersConnected = roomMatchValues.room_members.map((player) => player.username);
             let playersReady = roomMatchValues.room_members.filter((player) => player.is_ready).map((player) => player.username);
             return (
                 <div>
                     <h1 className="text-3xl font-bold text-white text-center m-12">Room Name: {room_name}</h1>
                     <h1 className="text-3xl font-bold text-white text-center m-12">Room Owner: {room_owner}</h1>
-                    <h2 className="text-white font-bold">Waiting for players to join the room...</h2>
+                    <h1 className="text-3xl font-bold text-white text-center m-12">Waiting for players to join the room...</h1>
                     <h2 className="text-white font-bold">Players connected: {playersConnected.join(', ')}</h2>
                     <h2 className="text-white font-bold">Players ready: {playersReady.join(', ')}</h2>
-                    <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+                    <button className='text-white text-bold bg-green-600 hover:bg-green-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
                         onClick={() => sendMessage(JSON.stringify({ 'ready': 'yes' }))}>I'm Ready!
                     </button>
+                    <div>
+                        <ClosingAlert text={'First, everyone will pick one location which the other players will have to guess where it is located based only on the Street View Image!'} color={'blue'} />
+                        <ClosingAlert text={'1º(Picking Phase) Grab the street view icon to the place you want to choose then click on "Select Location" button and then on "Send Location" button!'} color={'pink'} />
+                        <ClosingAlert text={'Now you will try to guess the places the other players have chosen and they will also try to guess yours!'} color={'blue'} />
+                        <ClosingAlert text={'2º(Guessing Phase) Click on the map where you think the image on the right is located and then click on "Send Location" button!'} color={'pink'} />
+                        <ClosingAlert text={"2º(Guessing Phase) If it's the location you have chosen, just wait the other players make their guesses!"} color={'pink'} />
+                        <ClosingAlert text={"After everyone made their guesses, you will see a a map with everyone's answers and then move to the next round!"} color={'yellow'} />
+                    </div>
                 </div>
             );
         }
@@ -581,7 +606,7 @@ const MatchRoomPage = () => {
             let now = new Date();
             let utc_timestamp = now.getTime() + (now.getTimezoneOffset() * 60000);
             let seconds = (utc_timestamp) / 1000;
-            let remainingTime = Math.floor(roomMatchValues.room_deadline_time - seconds);
+            let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - seconds);
             return (
                 <div id="mapsContainer">
                     <Wrapper apiKey={process.env.MAPS_API_KEY} render={render} libraries={["geometry"]}>
@@ -596,7 +621,7 @@ const MatchRoomPage = () => {
             let now = new Date();
             let utc_timestamp = now.getTime() + (now.getTimezoneOffset() * 60000);
             let seconds = (utc_timestamp) / 1000;
-            let remainingTime = Math.floor(roomMatchValues.room_deadline_time - seconds);
+            let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - seconds);
 
             let roundPlayerName;
             for (let i = 0; i < roomMatchValues.room_members.length; i++) {
@@ -622,10 +647,23 @@ const MatchRoomPage = () => {
         }
 
         else if (roomMatchValues.room_state == 'results') {
+            let now = new Date();
+            let utc_timestamp = now.getTime() + (now.getTimezoneOffset() * 60000);
+            let seconds = (utc_timestamp) / 1000;
+            let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - seconds);
+
+            let roundPlayerName;
+            for (let i = 0; i < roomMatchValues.room_members.length; i++) {
+                if (roomMatchValues.room_members[i].user_number == roomMatchValues.player_turn) {
+                    roundPlayerName = roomMatchValues.room_members[i].user_nickname;
+                }
+            }
+            
             return (
                 <div id="mapsContainer">
                     <Wrapper apiKey={process.env.MAPS_API_KEY} render={render} libraries={["geometry"]}>
-                        <MyMapComponentEndGame fenway={center} roomMatchValues={roomMatchValues}/>
+                        <MyMapComponentResult fenway={center} roomMatchValues={roomMatchValues}/>
+                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={roundPlayerName} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
                     </Wrapper>
                 </div>
             );
@@ -643,7 +681,7 @@ const MatchRoomPage = () => {
 
         else {
             return (
-                <h2 className="text-white font-bold">Click on the Play tab</h2>
+                <ClosingAlert text={'Click on the Play tab!'} color={'red'} />
             );
         }
     }, [roomMatchValues]);
