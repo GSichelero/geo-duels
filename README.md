@@ -14,10 +14,12 @@
 - Framework Backend: Django
 - Banco de Dados: PostgreSQL e MongoDB
 - Comunicação: REST API e WebSockets
-- Visualização do mapa e das localizações: Google Maps e Google Street View APIs.
+- Visualização do mapa e das localizações: Google Maps e Google Street View APIs
 
 ## Setting up your local environment
 - clone the repository
+- node v14.17.1
+- python 3.9.13
 
 ### Backend
 - in the backend folder, create a virtual environment with: python3 -m venv venv
