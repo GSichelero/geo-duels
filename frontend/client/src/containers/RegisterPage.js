@@ -3,10 +3,11 @@ import Layout from 'components/Layout';
 import { Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { register } from 'features/user';
+import ClosingAlert from 'components/Alert';
 
 const RegisterPage = () => {
 	const dispatch = useDispatch();
-	const { registered, loading } = useSelector(state => state.user);
+	const { registered, loading, errorMessageRegister } = useSelector(state => state.user);
 
 	const [formData, setFormData] = useState({
 		first_name: '',
@@ -26,7 +27,20 @@ const RegisterPage = () => {
 		e.preventDefault();
 
 		dispatch(register({ first_name, last_name, nickname, email, password }));
+
 	};
+
+	let errors = null;
+	if (errorMessageRegister){
+		errors = Object.entries(errorMessageRegister).map(([key, value]) => {
+			if (Array.isArray(value)) value = value.join(' ');
+			return `${key}: ${value}`;
+		});
+
+		errors = errors.map((error, index) => {
+			return <ClosingAlert color={'red'} text={error} />;
+		});
+	}
 
 	if (registered) return <Navigate to='/login' />;
 
@@ -107,6 +121,11 @@ const RegisterPage = () => {
 					<button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'>Register</button>
 				)}
 			</form>
+			{errorMessageRegister ? (
+				errors.map(function(error) { return(error)})
+			) : (
+				null
+			)}
 		</Layout>
 	);
 };

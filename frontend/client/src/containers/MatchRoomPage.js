@@ -383,9 +383,54 @@ function MyMapComponentEndGame({
         return <Navigate to="/play"/>;
     }
 
+    let playersAndScores = [];
+    roomMatchValues.room_members.map(function(room_member) {
+        let playerScore = 0;
+        let playerDistance = 0;
+        let guessingsCount = 0;
+        for( let i=1; i<=roomMatchValues.room_configs.number_of_rounds; i++ ) {
+            let round = room_member.rounds.find((round) => round.round_number == i);
+            for( let j=1; j<=roomMatchValues.room_configs.max_members; j++ ) {
+                if (room_member.user_number != j) {
+                    let geoPoint = round.guessings.find((guessing) => guessing.guess_number == j);
+                    let lat = geoPoint.guess_geopoint.lat
+                    let lng = geoPoint.guess_geopoint.lng
+                    let selectedPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
+
+                    let playerPicker = roomMatchValues.room_members.find((member) => member.user_number == j);
+                    let pick = playerPicker.rounds.find((round) => round.round_number == i).picking;
+                    let latPick = pick.lat;
+                    let lngPick = pick.lng;
+                    let pickedPosition = { lat: parseFloat(latPick), lng: parseFloat(lngPick) };
+
+                    let distanceFromCorrectPlace = window.google.maps.geometry.spherical.computeDistanceBetween(pickedPosition, selectedPosition);
+                    let score = 10000 - ((Math.log(distanceFromCorrectPlace) / Math.log(2)) * 400);
+                    if (score < 0) {
+                        score = 0;
+                    }
+                    else if (score > 10000) {
+                        score = 10000;
+                    }
+                    playerScore += score;
+                    playerDistance += distanceFromCorrectPlace;
+                    guessingsCount++;
+                }
+
+            }
+        }
+        let meanDistance = playerDistance / guessingsCount;
+        let meanScore = playerScore / guessingsCount;
+        let userName = room_member.username;
+        playersAndScores.push({userName, playerScore, meanScore, playerDistance, meanDistance});
+        });
+
+        playersAndScores.sort(function(a, b) {
+            return b.playerScore - a.playerScore;
+        });
+        playersAndScores.forEach((obj, index) => obj.rank = index + 1);
+
     return (
         <div id="mapsContainer">
-          <div ref={refMap} id="mapResult" />
           <table className="min-w-full">
             <thead>
                 <tr>
@@ -398,55 +443,57 @@ function MyMapComponentEndGame({
             </thead>
             <tbody>
           {
-            roomMatchValues.room_members.map(function(room_member) {
-                let playerScore = 0;
-                let playerDistance = 0;
-                let guessingsCount = 0;
-                for( let i=1; i<=roomMatchValues.room_configs.number_of_rounds; i++ ) {
-                    let round = room_member.rounds.find((round) => round.round_number == i);
-                    for( let j=1; j<=roomMatchValues.room_configs.max_members; j++ ) {
-                        if (room_member.user_number != j) {
-                            let geoPoint = round.guessings.find((guessing) => guessing.guess_number == j);
-                            let lat = geoPoint.guess_geopoint.lat
-                            let lng = geoPoint.guess_geopoint.lng
-                            let selectedPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
-    
-                            let playerPicker = roomMatchValues.room_members.find((member) => member.user_number == j);
-                            let pick = playerPicker.rounds.find((round) => round.round_number == i).picking;
-                            let latPick = pick.lat;
-                            let lngPick = pick.lng;
-                            let pickedPosition = { lat: parseFloat(latPick), lng: parseFloat(lngPick) };
-    
-                            let distanceFromCorrectPlace = window.google.maps.geometry.spherical.computeDistanceBetween(pickedPosition, selectedPosition);
-                            let score = 10000 - ((Math.log(distanceFromCorrectPlace) / Math.log(2)) * 400);
-                            if (score < 0) {
-                                score = 0;
-                            }
-                            else if (score > 10000) {
-                                score = 10000;
-                            }
-                            playerScore += score;
-                            playerDistance += distanceFromCorrectPlace;
-                            guessingsCount++;
-                        }
-    
-                    }
+            playersAndScores.map(function(playerResult) {
+
+                if (playerResult.rank == 1) {
+                    return (
+                        <tr className='bg-[#FFD700] bg-opacity-90 focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>🥇{playerResult.userName}</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.meanScore / 100).toFixed(1)}%</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.meanDistance / 1000)}Km ({Math.round(playerResult.meanDistance)}m)</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.playerScore / 100).toFixed(1)}</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.playerDistance / 1000)}Km ({Math.round(playerResult.playerDistance)}m)</td>
+                        </tr>
+                    );
                 }
-                let meanDistance = playerDistance / guessingsCount;
-                let meanScore = playerScore / guessingsCount;
-                return (
-                                <tr className=' focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
-                                    <td className='text-white font-bold text-bold text-center py-1'>{room_member.username}</td>
-                                    <td className='text-white font-bold text-bold text-center py-1'>{(meanScore / 100).toFixed(1)}</td>
-                                    <td className='text-white font-bold text-bold text-center py-1'>{Math.round(meanDistance / 1000)}Km ({Math.round(meanDistance)}m)</td>
-                                    <td className='text-white font-bold text-bold text-center py-1'>{(playerScore / 100).toFixed(1)}</td>
-                                    <td className='text-white font-bold text-bold text-center py-1'>{Math.round(playerDistance / 1000)}Km ({Math.round(playerDistance)}m)</td>
-                                </tr>
-                );
+                else if (playerResult.rank == 2) {
+                    return (
+                        <tr className='bg-[#c0c0c0] bg-opacity-90 focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>🥈{playerResult.userName}</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.meanScore / 100).toFixed(1)}%</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.meanDistance / 1000)}Km ({Math.round(playerResult.meanDistance)}m)</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.playerScore / 100).toFixed(1)}</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.playerDistance / 1000)}Km ({Math.round(playerResult.playerDistance)}m)</td>
+                        </tr>
+                    );
+                }
+                else if (playerResult.rank == 3) {
+                    return (
+                        <tr className='bg-[#CD7F32] bg-opacity-90 focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>🥉{playerResult.userName}</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.meanScore / 100).toFixed(1)}%</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.meanDistance / 1000)}Km ({Math.round(playerResult.meanDistance)}m)</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.playerScore / 100).toFixed(1)}</td>
+                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.playerDistance / 1000)}Km ({Math.round(playerResult.playerDistance)}m)</td>
+                        </tr>
+                    );
+                }
+                else {
+                    return (
+                        <tr className='focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
+                            <td className='text-white font-bold text-bold text-center py-1'>{playerResult.userName}</td>
+                            <td className='text-white font-bold text-bold text-center py-1'>{(playerResult.meanScore / 100).toFixed(1)}%</td>
+                            <td className='text-white font-bold text-bold text-center py-1'>{Math.round(playerResult.meanDistance / 1000)}Km ({Math.round(playerResult.meanDistance)}m)</td>
+                            <td className='text-white font-bold text-bold text-center py-1'>{(playerResult.playerScore / 100).toFixed(1)}</td>
+                            <td className='text-white font-bold text-bold text-center py-1'>{Math.round(playerResult.playerDistance / 1000)}Km ({Math.round(playerResult.playerDistance)}m)</td>
+                        </tr>
+                    );
+                }
             })}
                 </tbody>
             </table>
-            <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+            <div ref={refMap} id="mapResult" />
+            <button className='mt-2 text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
                 onClick={playAgain}>Play another Game!
             </button>
         </div>
@@ -467,6 +514,9 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
             setRemainingTimeOld(Number(remainingTime));
             setRoundPlayerNameOld(roundPlayerName);
             setStateOld(state);
+            if (state == "guessing" && roundPlayerName == userName) {
+                sendMessage(JSON.stringify({ 'guess': {'lat': 0, 'lng': 0} }));
+            }
         }
         if (seconds > 0) {
             const timer = () => setTimeout(() => setSeconds(seconds - 1), 1000);
@@ -485,8 +535,8 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
                 setSubmitPhrase('Pick a location!');
             }
             else if (state == 'results') {
-                setSecondPhrase('Just wait a little!');
-                setSecondPhrase(`Location chosen by: ${roundPlayerName}!`)
+                setSubmitPhrase(' ');
+                setSecondPhrase(' ');
             }
             return () => {
                 clearTimeout(timerId);
@@ -536,13 +586,13 @@ const MatchRoomPage = () => {
 	const { isAuthenticated, user, loading, registered, joinedRoom, roomMatchValues } = useSelector(state => state.user);
     let room_name = 'reload';
     let room_owner = 'reload';
-    let url = 'ws://127.0.0.1:8000/';
+    let url = process.env.REACT_APP_WS_URL;
     let room_password = 'reload';
     let user_nickname = 'reload';
     if (joinedRoom) {
         room_name = joinedRoom.room_name;
         room_owner = joinedRoom.room_owner;
-        url = `ws://127.0.0.1:8000/ws/room/${room_name}/`;
+        url = `${process.env.REACT_APP_WS_URL}/ws/room/${room_name}/`;
         room_password = joinedRoom.room_password;
         user_nickname = user.nickname;
     }
@@ -604,12 +654,12 @@ const MatchRoomPage = () => {
 
         else if (roomMatchValues.room_state == 'picking') {
             let now = new Date();
-            let utc_timestamp = now.getTime() + (now.getTimezoneOffset() * 60000);
+            let utc_timestamp = now.getTime()
             let seconds = (utc_timestamp) / 1000;
             let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - seconds);
             return (
                 <div id="mapsContainer">
-                    <Wrapper apiKey={process.env.MAPS_API_KEY} render={render} libraries={["geometry"]}>
+                    <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
                         <MyMapStreetComponentPick fenway={center} playerName={user.nickname} lat={-34.397} lng={150.644}/>
                         <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={'picking phase'} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
                     </Wrapper>
@@ -619,14 +669,14 @@ const MatchRoomPage = () => {
 
         else if (roomMatchValues.room_state == 'guessing') {
             let now = new Date();
-            let utc_timestamp = now.getTime() + (now.getTimezoneOffset() * 60000);
+            let utc_timestamp = now.getTime()
             let seconds = (utc_timestamp) / 1000;
             let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - seconds);
 
             let roundPlayerName;
             for (let i = 0; i < roomMatchValues.room_members.length; i++) {
                 if (roomMatchValues.room_members[i].user_number == roomMatchValues.player_turn) {
-                    roundPlayerName = roomMatchValues.room_members[i].user_nickname;
+                    roundPlayerName = roomMatchValues.room_members[i].username;
                 }
             }
             
@@ -638,7 +688,7 @@ const MatchRoomPage = () => {
 
             return (
                 <div id="mapsContainer">
-                    <Wrapper apiKey={process.env.MAPS_API_KEY} render={render} libraries={["geometry"]}>
+                    <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
                         <MyMapStreetComponentGuess fenway={center} playerName={user.nickname} lat={latPick} lng={lngPick} movingAllowed={movingAllowed}/>
                         <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={roundPlayerName} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
                     </Wrapper>
@@ -648,20 +698,20 @@ const MatchRoomPage = () => {
 
         else if (roomMatchValues.room_state == 'results') {
             let now = new Date();
-            let utc_timestamp = now.getTime() + (now.getTimezoneOffset() * 60000);
+            let utc_timestamp = now.getTime()
             let seconds = (utc_timestamp) / 1000;
             let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - seconds);
 
             let roundPlayerName;
             for (let i = 0; i < roomMatchValues.room_members.length; i++) {
                 if (roomMatchValues.room_members[i].user_number == roomMatchValues.player_turn) {
-                    roundPlayerName = roomMatchValues.room_members[i].user_nickname;
+                    roundPlayerName = roomMatchValues.room_members[i].username;
                 }
             }
             
             return (
                 <div id="mapsContainer">
-                    <Wrapper apiKey={process.env.MAPS_API_KEY} render={render} libraries={["geometry"]}>
+                    <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
                         <MyMapComponentResult fenway={center} roomMatchValues={roomMatchValues}/>
                         <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={roundPlayerName} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
                     </Wrapper>
@@ -672,7 +722,7 @@ const MatchRoomPage = () => {
         else if (roomMatchValues.room_state == 'endgame') {
             return (
                 <div id="mapsContainer">
-                    <Wrapper apiKey={process.env.MAPS_API_KEY} render={render} libraries={["geometry"]}>
+                    <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
                         <MyMapComponentEndGame fenway={center} roomMatchValues={roomMatchValues}/>
                     </Wrapper>
                 </div>

@@ -568,6 +568,8 @@ const initialState = {
 	receivedInvites: [],
 	joinedRoom: null,
 	roomMatchValues: null,
+	errorMessageRegister: null,
+	errorMessageLogin: null,
 };
 
 const userSlice = createSlice({
@@ -585,26 +587,34 @@ const userSlice = createSlice({
 			})
 			.addCase(register.fulfilled, state => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.registered = true;
 			})
-			.addCase(register.rejected, state => {
+			.addCase(register.rejected, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = action.payload;
 			})
 			.addCase(login.pending, state => {
 				state.loading = true;
 			})
 			.addCase(login.fulfilled, state => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.isAuthenticated = true;
 			})
-			.addCase(login.rejected, state => {
+			.addCase(login.rejected, (state, action) => {
 				state.loading = false;
+				state.errorMessageLogin = action.payload;
 			})
 			.addCase(getUser.pending, state => {
 				state.loading = true;
 			})
 			.addCase(getUser.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.user = action.payload;
 			})
 			.addCase(getUser.rejected, state => {
@@ -615,6 +625,8 @@ const userSlice = createSlice({
 			})
 			.addCase(checkAuth.fulfilled, state => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.isAuthenticated = true;
 			})
 			.addCase(checkAuth.rejected, state => {
@@ -625,6 +637,8 @@ const userSlice = createSlice({
 			})
 			.addCase(logout.fulfilled, state => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.isAuthenticated = false;
 				state.user = null;
 			})
@@ -637,6 +651,8 @@ const userSlice = createSlice({
 			})
 			.addCase(getAllUsers.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.users = action.payload;
 			})
 			.addCase(getAllUsers.rejected, state => {
@@ -648,6 +664,8 @@ const userSlice = createSlice({
 			})
 			.addCase(getFriends.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.friends = action.payload;
 			})
 			.addCase(getFriends.rejected, state => {
@@ -659,6 +677,8 @@ const userSlice = createSlice({
 			})
 			.addCase(getFriendRequestsReceived.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.friendRequestsReceived = action.payload;
 			})
 			.addCase(getFriendRequestsReceived.rejected, state => {
@@ -670,6 +690,8 @@ const userSlice = createSlice({
 			})
 			.addCase(getFriendRequestsSent.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.friendRequestsSent = action.payload;
 			})
 			.addCase(getFriendRequestsSent.rejected, state => {
@@ -680,6 +702,8 @@ const userSlice = createSlice({
 			})
 			.addCase(sendFriendRequest.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.friendRequestsSent = action.payload;
 			})
 			.addCase(sendFriendRequest.rejected, state => {
@@ -690,6 +714,8 @@ const userSlice = createSlice({
 			})
 			.addCase(acceptFriendRequest.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.friends = action.payload;
 				state.friendRequestsReceived = state.friendRequestsReceived.filter(
 					request => request.id !== action.meta.arg
@@ -703,6 +729,8 @@ const userSlice = createSlice({
 			})
 			.addCase(rejectFriendRequest.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.friendRequestsReceived = state.friendRequestsReceived.filter(
 					request => request.id !== action.meta.arg
 				);
@@ -715,6 +743,8 @@ const userSlice = createSlice({
 			})
 			.addCase(cancelFriendRequest.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.friendRequestsSent = state.friendRequestsSent.filter(
 					request => request.id !== action.meta.arg
 				);
@@ -727,6 +757,8 @@ const userSlice = createSlice({
 			})
 			.addCase(removeFriend.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.friends = state.friends.filter(friend => friend.id !== action.meta.arg);
 			})
 			.addCase(removeFriend.rejected, state => {
@@ -737,6 +769,8 @@ const userSlice = createSlice({
 			})
 			.addCase(createRoom.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.createdRoom = action.payload;
 			})
 			.addCase(createRoom.rejected, state => {
@@ -747,6 +781,8 @@ const userSlice = createSlice({
 			})
 			.addCase(getReceivedInvites.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.receivedInvites = action.payload;
 			})
 			.addCase(getReceivedInvites.rejected, state => {
@@ -757,6 +793,8 @@ const userSlice = createSlice({
 			})
 			.addCase(inviteFriend.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				// state.receivedInvites = action.payload;
 			})
 			.addCase(inviteFriend.rejected, state => {
@@ -767,6 +805,8 @@ const userSlice = createSlice({
 			})
 			.addCase(rejectInvite.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.receivedInvites = state.receivedInvites.filter(
 					invite => invite.roomId !== action.meta.arg
 				);
@@ -779,6 +819,8 @@ const userSlice = createSlice({
 			})
 			.addCase(joinRoom.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.joinedRoom = action.payload;
 			})
 			.addCase(joinRoom.rejected, state => {
@@ -789,6 +831,8 @@ const userSlice = createSlice({
 			})
 			.addCase(updateRoomValues.fulfilled, (state, action) => {
 				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
 				state.roomMatchValues = action.payload;
 			})
 			.addCase(updateRoomValues.rejected, state => {

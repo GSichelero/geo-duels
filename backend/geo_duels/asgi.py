@@ -18,13 +18,13 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'geo_duels.settings')
 
 django_asgi_app = get_asgi_application()
 
-import geo_duels.routing
+from geo_duels import routing
 
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
         "websocket": AllowedHostsOriginValidator(
-            AuthMiddlewareStack(URLRouter(geo_duels.routing.websocket_urlpatterns))
+            AuthMiddlewareStack(URLRouter(routing.websocket_urlpatterns))
         ),
     }
 )

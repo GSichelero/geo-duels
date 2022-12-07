@@ -3,10 +3,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import { resetRegistered, login } from 'features/user';
 import Layout from 'components/Layout';
+import ClosingAlert from 'components/Alert';
 
 const LoginPage = () => {
 	const dispatch = useDispatch();
-	const { loading, isAuthenticated, registered, previousPath } = useSelector(
+	const { loading, isAuthenticated, registered, previousPath, errorMessageLogin } = useSelector(
 		state => state.user
 	);
 
@@ -32,6 +33,18 @@ const LoginPage = () => {
 	};
 
 	if (isAuthenticated) return <Navigate to={`${previousPath}`} />;
+
+	let errors = null;
+	if (errorMessageLogin){
+		errors = Object.entries(errorMessageLogin).map(([key, value]) => {
+			if (Array.isArray(value)) value = value.join(' ');
+			return `${key}: ${value}`;
+		});
+
+		errors = errors.map((error, index) => {
+			return <ClosingAlert color={'red'} text={error} />;
+		});
+	}
 
 	return (
 		<Layout title='Geo Duels | Login' content='Login page'>
@@ -71,6 +84,11 @@ const LoginPage = () => {
 					<button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'>Login</button>
 				)}
 			</form>
+			{errorMessageLogin ? (
+				errors.map(function(error) { return(error)})
+			) : (
+				null
+			)}
 		</Layout>
 	);
 };

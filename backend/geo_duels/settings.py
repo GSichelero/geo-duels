@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-&0xu%hz(6x7*p^c(uy5!9c)f8b=hb03xqed8d1_tkgy6z)_un6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -88,16 +88,16 @@ WSGI_APPLICATION = 'geo_duels.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'geoduel',
-        'USER': 'postgres',
-        'PASSWORD': 'ggi2011',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    },
+if 'RDS_HOSTNAME' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': os.environ['RDS_DB_NAME'],
+            'USER': os.environ['RDS_USERNAME'],
+            'PASSWORD': os.environ['RDS_PASSWORD'],
+            'HOST': os.environ['RDS_HOSTNAME'],
+            'PORT': os.environ['RDS_PORT'],
+        },
     "nonrel": {
         'ENGINE': 'djongo',
         'CLIENT': {
@@ -107,6 +107,25 @@ DATABASES = {
         }
     }
 }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'geoduel',
+            'USER': 'postgres',
+            'PASSWORD': 'ggi2011',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        },
+        "nonrel": {
+            'ENGINE': 'djongo',
+            'CLIENT': {
+                'host': 'mongodb+srv://gsichelero:VlZU3h4LPgbLasyi@cluster0.yfbab4y.mongodb.net/?retryWrites=true&w=majority',
+                'username': 'gsichelero',
+                'password': 'VlZU3h4LPgbLasyi',
+            }
+        }
+    }
 
 
 # Password validation
