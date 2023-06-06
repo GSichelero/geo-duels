@@ -547,8 +547,8 @@ export const inviteFriend = createAsyncThunk('users/invite-friend', async ({ fri
 	}
 });
 
-export const updateRoomValues = createAsyncThunk('users/update-room-values', async ({ newRoom }, thunkAPI) => {
-	return newRoom;
+export const updateRoomValues = createAsyncThunk('users/update-room-values', async ({ "newRoom": newRoom, "currentTime": currentTime }, thunkAPI) => {
+	return { "room": newRoom, "current_time": currentTime };
 });
 
 
@@ -568,6 +568,7 @@ const initialState = {
 	receivedInvites: [],
 	joinedRoom: null,
 	roomMatchValues: null,
+	roomMatchCurrentTime: null,
 	errorMessageRegister: null,
 	errorMessageLogin: null,
 };
@@ -833,7 +834,8 @@ const userSlice = createSlice({
 				state.loading = false;
 				state.errorMessageRegister = null;
 				state.errorMessageLogin = null;
-				state.roomMatchValues = action.payload;
+				state.roomMatchValues = action.payload.room;
+				state.roomMatchCurrentTime = action.payload.current_time;
 			})
 			.addCase(updateRoomValues.rejected, state => {
 				state.loading = false;

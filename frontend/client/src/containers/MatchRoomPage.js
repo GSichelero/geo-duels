@@ -583,7 +583,7 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
 
 const MatchRoomPage = () => {
     const dispatch = useDispatch();
-	const { isAuthenticated, user, loading, registered, joinedRoom, roomMatchValues } = useSelector(state => state.user);
+	const { isAuthenticated, user, loading, registered, joinedRoom, roomMatchValues, roomMatchCurrentTime } = useSelector(state => state.user);
     let room_name = 'reload';
     let room_owner = 'reload';
     let url = process.env.REACT_APP_WS_URL;
@@ -617,7 +617,7 @@ const MatchRoomPage = () => {
     });
 
     if (lastJsonMessage != null && lastJsonMessage["room"] != roomMatchValues) {
-        dispatch(updateRoomValues({ "newRoom": lastJsonMessage["room"] }));
+        dispatch(updateRoomValues({ "newRoom": lastJsonMessage["room"], "currentTime": lastJsonMessage["current_time"] }));
     }
 
     const WrapperMaps = React.useMemo(() => {
@@ -653,10 +653,7 @@ const MatchRoomPage = () => {
         }
 
         else if (roomMatchValues.room_state == 'picking') {
-            let now = new Date();
-            let utc_timestamp = now.getTime()
-            let seconds = (utc_timestamp) / 1000;
-            let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - seconds);
+            let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - roomMatchCurrentTime);
             return (
                 <div id="mapsContainer">
                     <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
@@ -668,10 +665,7 @@ const MatchRoomPage = () => {
         }
 
         else if (roomMatchValues.room_state == 'guessing') {
-            let now = new Date();
-            let utc_timestamp = now.getTime()
-            let seconds = (utc_timestamp) / 1000;
-            let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - seconds);
+            let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - roomMatchCurrentTime);
 
             let roundPlayerName;
             for (let i = 0; i < roomMatchValues.room_members.length; i++) {
@@ -697,10 +691,7 @@ const MatchRoomPage = () => {
         }
 
         else if (roomMatchValues.room_state == 'results') {
-            let now = new Date();
-            let utc_timestamp = now.getTime()
-            let seconds = (utc_timestamp) / 1000;
-            let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - seconds);
+            let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - roomMatchCurrentTime);
 
             let roundPlayerName;
             for (let i = 0; i < roomMatchValues.room_members.length; i++) {

@@ -20,11 +20,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.nickname = self.scope["query_string"].decode("utf-8").split("username=")[1]
 
         self.room = await sync_to_async(Room.objects.using('nonrel').get)(room_name=self.room_name, room_password=self.password)
+        self.current_time = datetime.utcnow()
 
         if any(user['username'] == self.nickname for user in self.room.room_members):
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
-            await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message","room": self.room})
+            await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message", "room": self.room, "current_time": self.current_time.timestamp()})
 
 
     async def disconnect(self, close_code):
@@ -60,7 +61,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         }
                     })
             await sync_to_async(self.room.save)(using='nonrel')
-            await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message","room": self.room})
+            await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message", "room": self.room, "current_time": current_time.timestamp()})
 
 
         elif self.room.room_state == "picking":
@@ -95,7 +96,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         }
                     })
                 await sync_to_async(self.room.save)(using='nonrel')
-                await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message","room": self.room})
+                await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message", "room": self.room, "current_time": current_time.timestamp()})
 
         
         elif self.room.room_state == "guessing":
@@ -121,7 +122,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 self.room.room_state = "results"
                 self.room.room_deadline_time = (current_time + timedelta(seconds=15)).timestamp()
                 await sync_to_async(self.room.save)(using='nonrel')
-                await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message","room": self.room})
+                await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message", "room": self.room, "current_time": current_time.timestamp()})
         
         elif self.room.room_state == "results":
             if current_time.timestamp() >= self.room.room_deadline_time:
@@ -161,10 +162,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     self.room.room_state = "endgame"
 
                 await sync_to_async(self.room.save)(using='nonrel')
-                await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message","room": self.room})
+                await self.channel_layer.group_send(self.room_group_name,{"type": "chat_message", "room": self.room, "current_time": current_time.timestamp()})
 
 
     async def chat_message(self, event):
         room = event["room"]
         
-        await self.send(text_data=json.dumps({"room": RoomSerializer(room).data}))
+        await self.send(text_data=json.dumps({"room": RoomSerializer(room).data, "current_time": event["current_time"]}))
