@@ -100,7 +100,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         
         elif self.room.room_state == "guessing":
-            print(current_time.timestamp(), self.room.room_deadline_time, all(get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] for user in self.room.room_members))
             if current_time.timestamp() <= self.room.room_deadline_time:
                 if "guess" in text_data_json:
                     for user in self.room.room_members:
