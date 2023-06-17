@@ -7,7 +7,7 @@ import { getFriends, createSinglePlayerRoom, joinSinglePlayerRoom } from 'featur
 let room_name = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 let room_password = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 let max_members = 2;
-let number_of_rounds = 1;
+let number_of_rounds = 5;
 let time_per_pick = 30;
 let time_per_guess = 300;
 let moving_allowed = false;

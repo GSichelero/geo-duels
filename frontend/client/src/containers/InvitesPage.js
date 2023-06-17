@@ -37,13 +37,13 @@ const InvitesPage = () => {
                                     <td className='text-white font-bold text-bold text-center pr-6'>Room: {invite.roomName}</td>
                                     <td className='text-white font-bold text-bold text-center pr-5'>Host: {invite.roomOwner}</td>
                                     <td className='pr-3'>
-                                        <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+                                        <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
                                         onClick={() => dispatch(joinRoom({'room_name':invite.roomName, 'room_password':invite.roomPassword}))}>
                                             Join Match
                                         </button>
                                     </td>
                                     <td>
-                                        <button className='text-white text-bold bg-red-600 hover:bg-red-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+                                        <button className='text-white text-bold bg-red-600 hover:bg-red-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
                                         onClick={() => dispatch(rejectInvite({'room_id':invite.roomId}))}>
                                             Reject Invite
                                         </button>

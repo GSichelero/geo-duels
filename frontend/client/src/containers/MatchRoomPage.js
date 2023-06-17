@@ -128,7 +128,7 @@ function MyMapStreetComponentPick({
       <div id="mapsContainer">
         <div ref={refMap} id="map" />
         <div ref={refPano} id="pano" />
-        <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+        <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
             onClick={updateLocation}>Select Location!
         </button>
       </div>
@@ -493,7 +493,7 @@ function MyMapComponentEndGame({
                 </tbody>
             </table>
             <div ref={refMap} id="mapResult" />
-            <button className='mt-2 text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+            <button className='mt-2 text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
                 onClick={playAgain}>Play another Game!
             </button>
         </div>
@@ -574,7 +574,7 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
         <div>
         <h2 className="text-white font-bold">{`Time left: ${seconds} seconds! ${submitPhrase}`}</h2>
         <h2 className="text-white font-bold">{`${secondPhrase}`}</h2>
-        <button className='text-white text-bold bg-green-600 hover:bg-green-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+        <button className='text-white text-bold bg-green-600 hover:bg-green-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
             onClick={iAmReady}>Send Location!
         </button>
         </div>
@@ -637,7 +637,7 @@ const MatchRoomPage = () => {
                     <h1 className="text-3xl font-bold text-white text-center m-12">Waiting for players to join the room...</h1>
                     <h2 className="text-white font-bold">Players connected: {playersConnected.join(', ')}</h2>
                     <h2 className="text-white font-bold">Players ready: {playersReady.join(', ')}</h2>
-                    <button className='text-white text-bold bg-green-600 hover:bg-green-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800'
+                    <button className='text-white text-bold bg-green-600 hover:bg-green-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
                         onClick={() => sendMessage(JSON.stringify({ 'ready': 'yes' }))}>I'm Ready!
                     </button>
                     <div>
