@@ -12,10 +12,12 @@ from .views import (
   GetFriendRequestsReceivedView,
   GetAllUsersView,
   CreateRoomView,
+  CreateSinglePlayerRoomView,
   InviteFriendView,
   GetReceivedInvites,
   RejectInviteView,
   JoinRoomView,
+  JoinSinglePlayerRoomView,
 )
 
 
@@ -36,4 +38,6 @@ urlpatterns = [
   path('get-received-invites', GetReceivedInvites.as_view()),
   path('reject-invite', RejectInviteView.as_view()),
   path('join-room', JoinRoomView.as_view()),
+  path('create-single-player-room', CreateSinglePlayerRoomView.as_view()),
+  path('join-single-player-room', JoinSinglePlayerRoomView.as_view()),
 ]

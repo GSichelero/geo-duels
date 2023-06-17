@@ -442,6 +442,43 @@ export const createRoom = createAsyncThunk(
 		}
 	});
 
+
+export const createSinglePlayerRoom = createAsyncThunk(
+	'users/create-single-player-room',
+	async ({  room_name, room_password, max_members, number_of_rounds, time_per_pick, time_per_guess, moving_allowed }, thunkAPI) => {
+		const body = JSON.stringify({
+			room_name,
+			room_password,
+			max_members,
+			number_of_rounds,
+			time_per_pick,
+			time_per_guess,
+			moving_allowed,
+		});
+
+		try {
+			const res = await fetch('/api/users/create-single-player-room', {
+				method: 'POST',
+				headers: {
+					Accept: 'application/json',
+					'Content-Type': 'application/json',
+				},
+				body,
+			});
+
+			const data = await res.json();
+
+			if (res.status === 200) {
+				return data;
+			} else {
+				return thunkAPI.rejectWithValue(data);
+			}
+		} catch (err) {
+			return thunkAPI.rejectWithValue(err.response.data);
+		}
+	});
+
+
 export const getReceivedInvites = createAsyncThunk('users/get-received-invites', async (thunkAPI) => {
 	try {
 		const res = await fetch('/api/users/get-received-invites', {
@@ -519,6 +556,34 @@ export const joinRoom = createAsyncThunk('users/join-room', async ({ room_name, 
 	}
 });
 
+export const joinSinglePlayerRoom = createAsyncThunk('users/join-single-player-room', async ({ room_name, room_password }, thunkAPI) => {
+	const body = JSON.stringify({
+		room_name,
+		room_password,
+	});
+
+	try {
+		const res = await fetch('/api/users/join-single-player-room', {
+			method: 'POST',
+			headers: {
+				Accept: 'application/json',
+				'Content-Type': 'application/json',
+			},
+			body,
+		});
+
+		const data = await res.json();
+
+		if (res.status === 200) {
+			return data;
+		} else {
+			return thunkAPI.rejectWithValue(data);
+		}
+	} catch (err) {
+		return thunkAPI.rejectWithValue(err.response.data);
+	}
+});
+
 export const inviteFriend = createAsyncThunk('users/invite-friend', async ({ friend_username, room_id }, thunkAPI) => {
 	const body = JSON.stringify({
 		friend_username,
@@ -551,6 +616,14 @@ export const updateRoomValues = createAsyncThunk('users/update-room-values', asy
 	return { "room": newRoom, "current_time": currentTime };
 });
 
+export const resetRooms = createAsyncThunk('users/reset-rooms', async (thunkAPI) => {
+	return null;
+});
+
+export const setResetTrue = createAsyncThunk('users/set-reset-true', async (thunkAPI) => {
+	return null;
+});
+
 
 
 const initialState = {
@@ -571,6 +644,7 @@ const initialState = {
 	roomMatchCurrentTime: null,
 	errorMessageRegister: null,
 	errorMessageLogin: null,
+	reset: false,
 };
 
 const userSlice = createSlice({
@@ -777,6 +851,18 @@ const userSlice = createSlice({
 			.addCase(createRoom.rejected, state => {
 				state.loading = false;
 			})
+			.addCase(createSinglePlayerRoom.pending, state => {
+				// state.loading = true;
+			})
+			.addCase(createSinglePlayerRoom.fulfilled, (state, action) => {
+				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
+				state.createdRoom = action.payload;
+			})
+			.addCase(createSinglePlayerRoom.rejected, state => {
+				state.loading = false;
+			})
 			.addCase(getReceivedInvites.pending, state => {
 				// state.loading = true;
 			})
@@ -827,6 +913,18 @@ const userSlice = createSlice({
 			.addCase(joinRoom.rejected, state => {
 				state.loading = false;
 			})
+			.addCase(joinSinglePlayerRoom.pending, state => {
+				// state.loading = true;
+			})
+			.addCase(joinSinglePlayerRoom.fulfilled, (state, action) => {
+				state.loading = false;
+				state.errorMessageRegister = null;
+				state.errorMessageLogin = null;
+				state.joinedRoom = action.payload;
+			})
+			.addCase(joinSinglePlayerRoom.rejected, state => {
+				state.loading = false;
+			})
 			.addCase(updateRoomValues.pending, state => {
 				// state.loading = true;
 			})
@@ -839,6 +937,16 @@ const userSlice = createSlice({
 			})
 			.addCase(updateRoomValues.rejected, state => {
 				state.loading = false;
+			})
+			.addCase(resetRooms.fulfilled, state => {
+				state.createdRoom = null;
+				state.joinedRoom = null;
+				state.roomMatchValues = null;
+				state.roomMatchCurrentTime = null;
+				state.reset = false;
+			})
+			.addCase(setResetTrue.fulfilled, state => {
+				state.reset = true;
 			});
 	},
 });
