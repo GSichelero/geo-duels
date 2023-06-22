@@ -25,8 +25,8 @@ const CreateRoomPage = () => {
 	const {  room_name, room_password, max_members, number_of_rounds, time_per_pick, time_per_guess, moving_allowed } = formData;
 
 	const onChange = e => {
-		setFormData({ ...formData, [e.target.name]: e.target.value });
-	};
+        setFormData({ ...formData, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
+    };
 
 	const onSubmit = e => {
 		e.preventDefault();
