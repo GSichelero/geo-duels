@@ -216,7 +216,7 @@ class CreateSinglePlayerRoomView(APIView):
               'number_of_rounds': request.data['number_of_rounds'],
               'time_per_pick': request.data['time_per_pick'],
               'time_per_guess': request.data['time_per_guess'],
-              'moving_allowed': request.data['moving_allowed'] == 'true',
+              'moving_allowed': request.data['moving_allowed'] == True,
           }   
       )
       room.save(using='nonrel')
@@ -259,7 +259,7 @@ class CreateRoomView(APIView):
               'number_of_rounds': request.data['number_of_rounds'],
               'time_per_pick': request.data['time_per_pick'],
               'time_per_guess': request.data['time_per_guess'],
-              'moving_allowed': request.data['moving_allowed'] == 'true',
+              'moving_allowed': request.data['moving_allowed'] == True,
           }   
       )
       room.save(using='nonrel')
