@@ -14,7 +14,8 @@ import InvitesPage from 'containers/InvitesPage';
 import PlayRoomPage from 'containers/PlayRoomPage';
 import MatchRoomPage from 'containers/MatchRoomPage';
 import SinglePlayerMatchPage from 'containers/SinglePlayerMatchPage';
-import ProxyPage from 'containers/ProxyPage';
+import ProxyHomePage from 'containers/ProxyHomePage';
+import ProxySinglePlayerMatchPage from 'containers/ProxySinglePlayerMatchPage';
 
 const App = () => {
 	const dispatch = useDispatch();
@@ -28,7 +29,7 @@ const App = () => {
 			<Routes>
 				<Route path='/' element={<HomePage />} />
 				<Route path='/home' element={<HomePage />} />
-				<Route path='/proxy-home' element={<ProxyPage />} />
+				<Route path='/proxy-home' element={<ProxyHomePage />} />
 				<Route path='/login' element={<LoginPage />} />
 				<Route path='/register' element={<RegisterPage />} />
 				<Route path='/friends' element={<FriendsPage />} />
@@ -39,6 +40,7 @@ const App = () => {
 				<Route path='/play' element={<PlayRoomPage />} />
 				<Route path='/match' element={<MatchRoomPage />} />
 				<Route path='/single-player-match' element={<SinglePlayerMatchPage />} />
+				<Route path='/proxy-single-player-match' element={<ProxySinglePlayerMatchPage />} />
 			</Routes>
 		</Router>
 	);

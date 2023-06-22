@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { getFriends, createRoom, joinRoom, resetRooms } from 'features/user';
 
 
-const ProxyPage = () => {
+const ProxyHomePage = () => {
 	const dispatch = useDispatch();
 	const { isAuthenticated, user, loading, registered, createdRoom, friends, users, friendRequestsReceived, friendRequestsSent, joinedRoom } = useSelector(state => state.user);
 
@@ -25,4 +25,4 @@ const ProxyPage = () => {
 	);
 };
 
-export default ProxyPage;
+export default ProxyHomePage;
