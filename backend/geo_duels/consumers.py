@@ -198,36 +198,30 @@ class SinglePlayerMatchConsumer(AsyncWebsocketConsumer):
         self.room = await sync_to_async(Room.objects.using('nonrel').get)(room_name=self.room_name)
 
         places = [
-        (40.6892, -74.0445),   # Statue of Liberty, New York City, USA
-        (48.8584, 2.2945),     # Eiffel Tower, Paris, France
-        (27.1751, 78.0421),    # Taj Mahal, Agra, India
-        (40.4319, 116.5704),   # Great Wall of China, China
-        (-33.8568, 151.2153),  # Sydney Opera House, Sydney, Australia
-        (-22.9519, -43.2105),  # Christ the Redeemer, Rio de Janeiro, Brazil
-        (-13.1631, -72.5450),  # Machu Picchu, Cusco Region, Peru
-        (41.8902, 12.4922),    # Colosseum, Rome, Italy
-        (29.9792, 31.1342),    # Great Pyramid of Giza, Egypt
-        (30.3285, 35.4419),    # Petra, Jordan
-        (37.9715, 23.7267),    # Acropolis of Athens, Greece
-        (27.9881, 86.9250),    # Mount Everest, Nepal/China Border
-        (13.4125, 103.8660),   # Angkor Wat, Siem Reap, Cambodia
-        (43.0828, -79.0742),   # Niagara Falls, Ontario, Canada/New York, USA
-        (51.1789, -1.8262),    # Stonehenge, Wiltshire, England
-        (25.6953, -54.4367),   # Iguazu Falls, Paraná, Brazil/Argentina
-        (19.4326, -99.1332),   # Teotihuacan, Mexico
-        (51.5007, -0.1246),    # Buckingham Palace, London, England
-        (48.8566, 2.3522),     # Notre-Dame Cathedral, Paris, France
-        (29.9792, 31.1342),    # Sphinx of Giza, Egypt
-        (19.9333, 32.5333),    # Nile River, Egypt
-        (27.1749, 78.0421),    # Agra Fort, Agra, India
-        (61.0636, -7.1881),    # Strokkur Geyser, Geysir, Iceland
-        (35.7101, 139.8107),   # Tokyo Tower, Tokyo, Japan
-        (51.1789, -1.8262),    # Avebury, Wiltshire, England
-        (48.8584, 2.2945),     # Palace of Versailles, Versailles, France
-        (51.1789, -1.8262),    # Salisbury Cathedral, Salisbury, England
-        (27.9861, 86.9223),    # Khumbu Icefall, Mount Everest, Nepal
-        (55.7517, 37.6178),    # Red Square, Moscow, Russia
-        (30.3285, 35.4419),     # Wadi Rum, Jordan
+        # World Attractions
+        (40.6940675,-74.0529048),   # Statue of Liberty, New York City, USA
+        (48.8611784,2.2963307),     # Eiffel Tower, Paris, France
+        (27.1738754,78.0428079),    # Taj Mahal, Agra, India
+        (-33.8587411,151.2148142),  # Sydney Opera House, Sydney, Australia
+        (-22.9451806,-43.1967596),  # Christ the Redeemer, Rio de Janeiro, Brazil
+        (-13.1631092,-72.5449208),  # Machu Picchu, Cusco Region, Peru
+        (41.8911657,12.4921193),    # Colosseum, Rome, Italy
+        (29.9797683,31.1327971),    # Great Pyramid of Giza, Egypt
+        (30.3293943,35.4417831),    # Petra, Jordan
+        (37.9729837,23.7268789),    # Acropolis of Athens, Greece
+        (27.9635027,86.8198438),    # Mount Everest, Nepal/China Border
+        (13.4132414,103.8670566),   # Angkor Wat, Siem Reap, Cambodia
+        (43.0831627,-79.0756546),   # Niagara Falls, Ontario, Canada/New York, USA
+        (51.1788618,-1.8267175),    # Stonehenge, Wiltshire, England
+        (19.432573,-99.1330643),   # Teotihuacan, Mexico
+        (51.5008596,-0.1255044),    # Buckingham Palace, London, England
+        (48.8561379,2.352197),     # Notre-Dame Cathedral, Paris, France
+        (27.1744385,78.0421149),    # Agra Fort, Agra, India
+        (35.7100222,139.8104795),   # Tokyo Tower, Tokyo, Japan
+        (48.8582247,2.2941902),     # Palace of Versailles, Versailles, France
+        (55.7516094,37.6178805),    # Red Square, Moscow, Russia
+        (30.3286998,35.4422388),     # Wadi Rum, Jordan
+        # Random
         (-12.9773614,-38.5045154), # Salvador, Brazil
         (38.6923837,-9.2160112), # Lisbon, Portugal
         (50.3870336,30.4573609), # Kiev, Ukraine
@@ -241,173 +235,134 @@ class SinglePlayerMatchConsumer(AsyncWebsocketConsumer):
         (52.3139014,18.2261667), # Lodz, Poland
         (52.4384117,4.816337), # Amsterdam, Netherlands
         (53.010169,18.6045554), # Bydgoszcz, Poland
-        (-22.9519, -43.2105),  # Christ the Redeemer (Cristo Redentor), Rio de Janeiro
-        (-22.9488, -43.1576),  # Sugarloaf Mountain (Pão de Açúcar), Rio de Janeiro
-        (-25.6953, -54.4367),  # Iguazu Falls (Cataratas do Iguaçu), Paraná
-        (-22.9739, -43.1856),  # Copacabana Beach, Rio de Janeiro
-        (-12.9724, -38.5124),  # Salvador Historic Center (Pelourinho), Salvador
-        (-3.8405, -32.4135),   # Fernando de Noronha, Pernambuco
-        (-2.5056, -43.1750),   # Lençóis Maranhenses National Park, Maranhão
-        (-22.9122, -43.2302),  # Maracanã Stadium, Rio de Janeiro
-        (-23.5618, -46.6568),  # Avenida Paulista, São Paulo
-        (-15.7998, -47.8827),  # Brasília Cathedral (Catedral Metropolitana de Brasília), Brasília
-        (-22.9105, -43.1742),  # Theatro Municipal, Rio de Janeiro
-        (-28.1770, -48.6523),  # Praia do Rosa, Santa Catarina
-        (-22.9709, -43.3022),  # Tijuca National Park (Parque Nacional da Tijuca), Rio de Janeiro
-        (-20.3836, -43.5030),  # Ouro Preto, Minas Gerais
-        (-25.4165, -54.5875),  # Itaipu Dam (Usina Hidrelétrica de Itaipu), Paraná
-        (-12.9693, -38.5127),  # São Francisco Church and Convent (Igreja e Convento de São Francisco), Salvador
-        (-12.6165, -41.4923),   # Chapada Diamantina National Park, Bahia
-        (37.8651, -119.5383),  # Yosemite National Park, California
-        (37.7749, -122.4194),  # Golden Gate Bridge, San Francisco, California
-        (34.0522, -118.2437),  # Hollywood Walk of Fame, Los Angeles, California
-        (34.0522, -118.2507),  # Griffith Observatory, Los Angeles, California
-        (36.1699, -115.1398),  # Las Vegas Strip, Las Vegas, Nevada
-        (40.7589, -73.9851),   # Times Square, New York City, New York
-        (38.9072, -77.0369),   # White House, Washington D.C.
-        (41.8781, -87.6298),   # Millennium Park, Chicago, Illinois
-        (37.7749, -122.4194),  # Alcatraz Island, San Francisco, California
-        (38.9072, -123.5083),  # Redwood National and State Parks, California
-        (29.9511, -90.0715),   # French Quarter, New Orleans, Louisiana
-        (47.6062, -122.3321),  # Pike Place Market, Seattle, Washington
-        (40.7128, -74.0060),   # Statue of Liberty, New York City, New York
-        (33.7489, -84.3789),   # Centennial Olympic Park, Atlanta, Georgia
-        (41.8781, -87.6298),   # Navy Pier, Chicago, Illinois
-        (38.9072, -77.0369),   # National Mall, Washington D.C.
-        (25.7617, -80.1918),   # South Beach, Miami, Florida
-        (41.8919, -87.6089),   # The Art Institute of Chicago, Illinois
-        (34.0500, -118.2500),  # Universal Studios Hollywood, Los Angeles, California
-        (36.1699, -115.1398),   # Bellagio Hotel and Casino, Las Vegas, Nevada
-        (51.1789, -1.8262),    # Stonehenge, Wiltshire, England
-        (48.8584, 2.2945),     # Eiffel Tower, Paris, France
-        (41.9028, 12.4964),    # Vatican City, Rome, Italy
-        (51.1657, 10.4515),    # Neuschwanstein Castle, Bavaria, Germany
-        (55.6761, 12.5683),    # Nyhavn, Copenhagen, Denmark
-        (40.4319, -3.6893),    # Plaza Mayor, Madrid, Spain
-        (48.1351, 11.5820),    # Marienplatz, Munich, Germany
-        (41.4036, 2.1744),     # Park Güell, Barcelona, Spain
-        (59.3293, 18.0686),    # Gamla Stan (Old Town), Stockholm, Sweden
-        (48.8566, 2.3522),     # Notre-Dame Cathedral, Paris, France
-        (55.7517, 37.6178),    # Red Square, Moscow, Russia
-        (45.4384, 12.3271),    # St. Mark's Square, Venice, Italy
-        (52.5163, 13.3779),    # Brandenburg Gate, Berlin, Germany
-        (41.9028, 12.4964),    # Trevi Fountain, Rome, Italy
-        (47.3769, 8.5417),     # Rhine Falls, Schaffhausen, Switzerland
-        (55.6761, 12.5683),    # Tivoli Gardens, Copenhagen, Denmark
-        (41.9028, 12.4964),    # Roman Colosseum, Rome, Italy
-        (55.7558, 37.6176),    # Bolshoi Theatre, Moscow, Russia
-        (51.1657, 10.4515),    # Zugspitze, Bavaria, Germany
-        (47.4979, 19.0402),     # Széchenyi Thermal Bath, Budapest, Hungary
+        (-26.9157581,-48.6650539), # Itajai, Brazil
+        (-26.9713048,-48.6322289), # Balneario Camboriu, Brazil
+        (-27.0216238,-48.6520151), # Camboriu, Brazil
+        (-27.1307656,-48.6001424), # Itapema, Brazil
+        (-27.5975216,-48.566637), # Bombinhas, Brazil
+        (39.7401557,-104.9860203), # Denver, Colorado, USA
+        (50.0753735,14.4135662), # Prague, Czech Republic
+        (48.2043261,16.3677289), # Vienna, Austria
+        (48.7199265,21.2562986), # Kosice, Slovakia
+        (41.0058175,28.9761401), # Istanbul, Turkey
+        (41.0256005,28.9743368), # Istanbul, Turkey
+        (36.4250886,25.4292034), # Santorini, Greece
+        (44.4275424,26.0923933), # Bucharest, Romania
+        (44.8125289,20.4613769), # Belgrade, Serbia
+        (38.0774772,13.4933311), # Palermo, Italy
+        (-30.0689807,-51.2375679), # Porto Alegre, Brazil
+        (32.7769879,-96.7999747), # Dallas, Texas, USA
+        (32.5378216,-117.081405), # Tijuana, Mexico
+        (-33.9250877,18.4239157), # Cape Town, South Africa
+        (25.1987398,55.2720745), # Dubai, United Arab Emirates
+        (63.5433592,-19.6743041), # Reykjavik, Iceland
+        (-27.2956298,-70.4942161), # La Serena, Chile
+        (28.4779114,77.0426084), # New Delhi, India
+        (22.3172115,114.1592772), # Hong Kong, China
+        # Brazil
+        (-25.6956923,-54.4372682),  # Iguazu Falls (Cataratas do Iguaçu), Paraná
+        (-22.9735653,-43.1858853),  # Copacabana Beach, Rio de Janeiro
+        (-12.9718112,-38.5148679),  # Salvador Historic Center (Pelourinho), Salvador
+        (-3.8407897,-32.4136208),   # Fernando de Noronha, Pernambuco
+        (-2.4979008,-43.1963583),   # Lençóis Maranhenses National Park, Maranhão
+        (-22.9121536,-43.2301913),  # Maracanã Stadium, Rio de Janeiro
+        (-23.560797,-46.6573335),  # Avenida Paulista, São Paulo
+        (-15.8000808,-47.8824894),  # Brasília Cathedral (Catedral Metropolitana de Brasília), Brasília
+        (-28.1757734,-48.663639),  # Praia do Rosa, Santa Catarina
+        (-20.3837184,-43.5029371),  # Ouro Preto, Minas Gerais
+        (-25.4148762,-54.5885835),  # Itaipu Dam (Usina Hidrelétrica de Itaipu), Paraná
+        # United States
+        (37.8326174,-119.4909159),  # Yosemite National Park, California
+        (37.7915907,-122.3855299),  # Golden Gate Bridge, San Francisco, California
+        (36.1699874,-115.1401008),  # Las Vegas Strip, Las Vegas, Nevada
+        (40.7588258,-73.9849384),   # Times Square, New York City, New York
+        (38.900249,-77.0364317),   # White House, Washington D.C.
+        (41.8755883,-87.6454417),   # Millennium Park, Chicago, Illinois
+        (29.9546917,-90.0691064),   # French Quarter, New Orleans, Louisiana
+        (47.6067702,-122.3320629),  # Pike Place Market, Seattle, Washington
+        (33.7604435,-84.3933626),   # Centennial Olympic Park, Atlanta, Georgia
+        (25.7906364,-80.1300947),   # South Beach, Miami, Florida
+        (41.9078173,-87.6273142),   # The Art Institute of Chicago, Illinois
+        (34.1373948,-118.3558077),  # Universal Studios Hollywood, Los Angeles, California
+        # Europe
+        (41.9021519,12.4585805),    # Vatican City, Rome, Italy
+        (55.6799444,12.5908594),    # Nyhavn, Copenhagen, Denmark
+        (40.4156673,-3.707267),    # Plaza Mayor, Madrid, Spain
+        (48.1391123,11.5728983),    # Marienplatz, Munich, Germany
+        (41.4136045,2.1534422),     # Park Güell, Barcelona, Spain
+        (59.3291284,18.0688732),    # Gamla Stan (Old Town), Stockholm, Sweden
+        (45.4342372,12.3381749),    # St. Mark's Square, Venice, Italy
+        (52.5146269,13.3783465),    # Brandenburg Gate, Berlin, Germany
+        (47.6768417,8.6147824),     # Rhine Falls, Schaffhausen, Switzerland
+        (55.759558,37.618903),    # Bolshoi Theatre, Moscow, Russia
+        (47.5190596,19.0816504),     # Széchenyi Thermal Bath, Budapest, Hungary
         # Japan
-        (35.6895, 139.6917),   # Tokyo Tower, Tokyo
-        (35.7101, 139.8107),   # Shibuya Crossing, Tokyo
-        (34.6937, 135.5023),   # Fushimi Inari Taisha, Kyoto
-        (35.0116, 135.7681),   # Kiyomizu-dera, Kyoto
-        (35.6762, 139.6503),   # Meiji Shrine, Tokyo
-        (35.6895, 139.6917),   # Tokyo Disneyland, Tokyo
-        (34.6881, 135.8430),   # Osaka Castle, Osaka
-        (34.6863, 135.5259),   # Arashiyama Bamboo Grove, Kyoto
-        (35.6895, 139.6917),   # Shinjuku Gyoen National Garden, Tokyo
-        (35.6895, 139.6917),   # Akihabara, Tokyo
+        (35.6592632,139.7451773),   # Tokyo Tower, Tokyo
+        (34.694346,135.5029972),   # Fushimi Inari Taisha, Kyoto
+        (34.99493,135.7852785),   # Kiyomizu-dera, Kyoto
+        (35.0222315,135.9515461),   # Meiji Shrine, Tokyo
+        (35.6351217,139.8836837),   # Tokyo Disneyland, Tokyo
+        (34.6867033,135.5259441),   # Osaka Castle, Osaka
+        (35.0167328,135.6702031),   # Arashiyama Bamboo Grove, Kyoto
+        (35.6854887,139.7097408),   # Shinjuku Gyoen National Garden, Tokyo
         # Philippines
-        (14.5906, 120.9794),   # Rizal Park, Manila
-        (14.5906, 120.9794),   # Intramuros, Manila
-        (9.9623, 123.3840),    # Chocolate Hills, Bohol
-        (13.4443, 144.7937),   # Tumon Bay, Guam
-        (13.1631, 123.7480),   # Mayon Volcano, Albay
-        (11.9400, 121.9533),   # Boracay Island, Aklan
-        (14.6760, 121.0437),   # Manila Ocean Park, Manila
-        (9.2833, 123.4122),    # Kawasan Falls, Cebu
-        (10.3157, 123.8854),   # Fort San Pedro, Cebu
-        (9.1953, 123.2569),    # Oslob Whale Shark Watching, Cebu
+        (14.5818434,120.9775311),   # Rizal Park, Manila
         # South Korea
-        (37.5665, 126.9780),   # Gyeongbokgung Palace, Seoul
-        (37.5665, 126.9780),   # Myeongdong, Seoul
-        (37.5796, 126.9770),   # N Seoul Tower, Seoul
-        (33.5185, 126.5288),   # Hyeopjae Beach, Jeju Island
-        (37.5665, 126.9780),   # Bukchon Hanok Village, Seoul
-        (37.5665, 126.9780),   # Lotte World Tower, Seoul
-        (35.1796, 129.0756),   # Haedong Yonggungsa Temple, Busan
-        (37.5665, 126.9780),   # Changdeokgung Palace, Seoul
-        (37.5123, 127.0512),   # Gangnam District, Seoul
-        (35.9078, 127.7669),   # Jeonju Hanok Village, Jeonju
+        (37.5798091,126.9770773),   # Gyeongbokgung Palace, Seoul
+        (33.3943885,126.2388354),   # Hyeopjae Beach, Jeju Island
+        (37.5814594,126.9849121),   # Bukchon Hanok Village, Seoul
+        (37.5117663,127.1015046),   # Lotte World Tower, Seoul
+        (35.1896397,129.2208494),   # Haedong Yonggungsa Temple, Busan
+        (37.501648,127.072299),   # Gangnam District, Seoul
+        (35.8147099,127.1525936),   # Jeonju Hanok Village, Jeonju
         # Indonesia
-        (-8.4095, 115.1889),   # Tanah Lot, Bali
-        (-6.1751, 106.8650),   # National Monument (Monas), Jakarta
-        (-7.9813, 112.6307),   # Mount Bromo, East Java
-        (-8.6500, 115.2167),   # Ubud Monkey Forest, Bali
-        (-7.7956, 110.3695),   # Borobudur Temple, Central Java
-        (-8.4095, 115.1889),   # Uluwatu Temple, Bali
-        (-6.2297, 106.8296),   # Taman Mini Indonesia Indah, Jakarta
-        (-8.5833, 116.1167),   # Gili Islands, West Nusa Tenggara
-        (-6.1754, 106.8272),   # Istiqlal Mosque, Jakarta
-        (-6.1214, 106.7741),    # Jakarta Old Town, Jakarta
+        (-8.6209798,115.0872464),   # Tanah Lot, Bali
+        (-6.1747144,106.8269666),   # National Monument (Monas), Jakarta
+        (-7.9210411,112.9633616),   # Mount Bromo, East Java
+        (-8.5192373,115.260865),   # Ubud Monkey Forest, Bali
+        (-8.5577103,115.2564031),   # Borobudur Temple, Central Java
+        (-8.3475352,116.0513871),   # Gili Islands, West Nusa Tenggara
         # Singapore
-        (1.2894, 103.8592),    # Marina Bay Sands, Singapore
-        (1.3521, 103.8198),    # Gardens by the Bay, Singapore
-        (1.2821, 103.8506),    # Sentosa Island, Singapore
-        (1.2809, 103.8481),    # Universal Studios Singapore
-        (1.3000, 103.8431),    # Orchard Road, Singapore
-        (1.2897, 103.8501),    # Merlion Park, Singapore
-        (1.3196, 103.8434),    # Singapore Botanic Gardens
-        (1.2879, 103.8466),    # Clarke Quay, Singapore
-        (1.3521, 103.8178),    # ArtScience Museum, Singapore
-        (1.2786, 103.8436),     # Raffles Hotel, Singapore
+        (1.2835405,103.8582378),    # Marina Bay Sands, Singapore
+        (1.2809862,103.8632146),    # Gardens by the Bay, Singapore
+        (1.2865824,103.8591637),    # ArtScience Museum, Singapore
         # Canada
-        (51.1784, -115.5708),    # Banff National Park, Alberta
-        (45.4215, -75.6981),     # Parliament Hill, Ottawa, Ontario
-        (49.2827, -123.1207),    # Stanley Park, Vancouver, British Columbia
-        (43.6532, -79.3832),     # CN Tower, Toronto, Ontario
-        (45.5017, -73.5673),     # Old Montreal, Montreal, Quebec
-        (53.5444, -113.4909),    # West Edmonton Mall, Edmonton, Alberta
-        (48.4284, -123.3656),    # Inner Harbour, Victoria, British Columbia
-        (48.8588, -123.5152),    # Butchart Gardens, Brentwood Bay, British Columbia
-        (45.4215, -75.6981),     # Rideau Canal, Ottawa, Ontario
-        (51.0447, -114.0719),    # Calgary Stampede, Calgary, Alberta
+        (51.5096559,-116.0680336),    # Banff National Park, Alberta
+        (45.422561,-75.7002561),     # Parliament Hill, Ottawa, Ontario
+        (49.2974065,-123.135964),    # Stanley Park, Vancouver, British Columbia
+        (43.639905,-79.3855381),     # CN Tower, Toronto, Ontario
+        (45.5038151,-73.5438791),     # Old Montreal, Montreal, Quebec
+        (53.5227613,-113.6154822),    # West Edmonton Mall, Edmonton, Alberta
+        (48.4208584,-123.3692479),    # Inner Harbour, Victoria, British Columbia
+        (45.3959762,-75.6884821),     # Rideau Canal, Ottawa, Ontario
+        (51.0364333,-114.0522676),    # Calgary Stampede, Calgary, Alberta
         # Mexico
-        (19.4326, -99.1332),     # Zócalo, Mexico City
-        (21.1619, -86.8515),     # Tulum Ruins, Tulum, Quintana Roo
-        (20.6843, -88.5678),     # Chichen Itza, Yucatán
-        (25.6866, -100.3161),    # Macroplaza, Monterrey, Nuevo León
-        (21.1619, -86.8515),     # Playa del Carmen, Quintana Roo
-        (19.0403, -98.2062),     # Puebla Cathedral, Puebla
-        (19.4326, -99.1332),     # Frida Kahlo Museum, Mexico City
-        (25.5720, -108.4708),    # Copper Canyon, Chihuahua
-        (21.1619, -86.8515),     # Xcaret Park, Quintana Roo
-        (19.4978, -99.1269),     # Chapultepec Castle, Mexico City
+        (19.4336309,-99.1336609),     # Zócalo, Mexico City
+        (20.2149118,-87.4292651),     # Tulum Ruins, Tulum, Quintana Roo
+        (20.6796071,-88.5682961),     # Chichen Itza, Yucatán
+        (25.6684189,-100.3105522),    # Macroplaza, Monterrey, Nuevo León
+        (20.6451107,-87.0550637),     # Playa del Carmen, Quintana Roo
+        (19.0432964,-98.1983079),     # Puebla Cathedral, Puebla
+        (27.5105009,-107.82168),    # Copper Canyon, Chihuahua
+        (20.5804179,-87.1211451),     # Xcaret Park, Quintana Roo
+        (19.4206197,-99.1813736),     # Chapultepec Castle, Mexico City
         # Argentina
-        (-34.6037, -58.3816),    # Plaza de Mayo, Buenos Aires
-        (-41.1335, -71.3103),    # Perito Moreno Glacier, Santa Cruz
-        (-24.7829, -65.4122),    # Salinas Grandes, Jujuy
-        (-34.6291, -58.4284),    # La Boca, Buenos Aires
-        (-31.4155, -64.1835),    # Cordoba Cathedral, Cordoba
-        (-34.6037, -58.3816),    # Teatro Colón, Buenos Aires
-        (-42.7700, -65.0400),    # Peninsula Valdes, Chubut
-        (-41.1317, -71.3102),    # Cerro Catedral, Bariloche, Rio Negro
-        (-23.2375, -67.2208),    # Quebrada de Humahuaca, Jujuy
-        (-32.9569, -60.6686),     # National Flag Memorial, Rosario, Santa Fe
+        (-34.6083538,-58.3725346),    # Plaza de Mayo, Buenos Aires
+        (-50.4728324,-73.0326948),    # Perito Moreno Glacier, Santa Cruz
+        (-34.6498318,-58.3676939),    # La Boca, Buenos Aires
+        (-34.614712,-58.4229039),    # Cordoba Cathedral, Cordoba
+        (-34.6011333,-58.3839226),    # Teatro Colón, Buenos Aires
+        (-41.1326459,-71.3104679),    # Cerro Catedral, Bariloche, Rio Negro
+        (-23.1112722,-65.3722421),    # Quebrada de Humahuaca, Jujuy
+        (-32.9478321,-60.6299122),     # National Flag Memorial, Rosario, Santa Fe
         # Australia
-        (-33.8568, 151.2153),   # Sydney Opera House, Sydney
-        (-37.8136, 144.9631),   # Federation Square, Melbourne
-        (-27.4698, 153.0251),   # South Bank, Brisbane
-        (-31.9505, 115.8605),   # Kings Park, Perth
-        (-34.9285, 138.6007),   # Adelaide Oval, Adelaide
-        (-33.8679, 151.2093),   # Bondi Beach, Sydney
-        (-42.8821, 147.3272),   # Salamanca Market, Hobart
-        (-35.2809, 149.1300),   # Australian War Memorial, Canberra
-        (-27.4698, 153.0251),   # Lone Pine Koala Sanctuary, Brisbane
-        (-12.4634, 130.8456),   # Mindil Beach, Darwin
+        (-33.8561435,151.2154923),   # Sydney Opera House, Sydney
+        (-37.8178936,144.9689882),   # Federation Square, Melbourne
+        (-27.4776396,153.0231596),   # South Bank, Brisbane
+        (-34.9153151,138.5954088),   # Adelaide Oval, Adelaide
+        (-33.891194,151.2759991),   # Bondi Beach, Sydney
         # New Zealand
-        (-36.8485, 174.7633),   # Sky Tower, Auckland
-        (-41.2865, 174.7762),   # Te Papa Tongarewa, Wellington
-        (-45.8664, 170.5170),   # Cadbury World, Dunedin
-        (-41.2906, 173.2349),   # Marlborough Sounds, Marlborough
-        (-36.8530, 174.7630),   # Waiheke Island, Auckland
-        (-43.5321, 172.6362),   # Christchurch Botanic Gardens, Christchurch
-        (-37.7870, 175.2793),   # Hobbiton Movie Set, Matamata
-        (-41.2906, 173.2349),   # Abel Tasman National Park, Nelson
-        (-41.2865, 174.7762),   # Oriental Bay, Wellington
-        (-45.0312, 168.6626),    # Milford Sound, Southland
+        (-36.8481302,174.7623019),   # Sky Tower, Auckland
         ]
 
         five_places = random.sample(places, 5)
