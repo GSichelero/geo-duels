@@ -153,3 +153,33 @@ class Room(mongo_models.Model):
 
   class Meta:
     _use_db = 'nonrel'
+
+
+class SinglePlayerMatchConfig(mongo_models.Model):
+  id = mongo_models.ObjectIdField(default=1)
+  number_of_rounds = mongo_models.IntegerField(default=5)
+  time_per_guess = mongo_models.IntegerField(default=60)
+  moving_allowed = mongo_models.BooleanField(default=True)
+
+class SinglePlayerRoom(mongo_models.Model):
+  _id = mongo_models.ObjectIdField()
+  room_name = mongo_models.TextField(max_length=30)
+  room_owner = mongo_models.TextField(max_length=15)
+  room_state = mongo_models.TextField(max_length=30)
+  room_round = mongo_models.IntegerField(default=0)
+  room_deadline_time = mongo_models.FloatField(default=0)
+  is_active = mongo_models.BooleanField(default=True)
+  room_members = mongo_models.ArrayField(
+    model_container=RoomMember,
+    model_form_class=RoomMember,
+  )
+  room_configs = mongo_models.EmbeddedField(
+    model_container=RoomConfig,
+    model_form_class=RoomConfig,
+  )
+
+  def __str__(self):
+    return self.room_name
+
+  class Meta:
+    _use_db = 'nonrel'

@@ -194,6 +194,46 @@ class GetAllUsersView(APIView):
     return Response(users.data, status=status.HTTP_200_OK)
 
 
+class CreateSinglePlayerRoomView(APIView):
+  def post(self, request):
+    user_nickname = 'You'
+
+    if not Room.objects.using('nonrel').filter(room_name=request.data['room_name']).exists():
+      room = Room(
+          room_name=request.data['room_name'],
+          room_password=request.data['room_password'],
+          room_owner=user_nickname,
+          room_state='waiting',
+          room_round=0,
+          player_turn=0,
+          room_deadline_time=0,
+          is_active=True,
+          room_members=[],
+          invited_users=[],
+          room_configs={
+              'id': 1,
+              'max_members': request.data['max_members'],
+              'number_of_rounds': request.data['number_of_rounds'],
+              'time_per_pick': request.data['time_per_pick'],
+              'time_per_guess': request.data['time_per_guess'],
+              'moving_allowed': request.data['moving_allowed'] == True,
+          }   
+      )
+      room.save(using='nonrel')
+      return Response({
+        'roomId': str(room._id),
+        'roomName': room.room_name,
+        'roomPassword': room.room_password,
+        'roomOwner': room.room_owner,
+        'isActive': room.is_active,
+        'roomMembers': room.room_members,
+        'max_members': room.room_configs.get('max_members'),
+        }, status=status.HTTP_200_OK)
+
+    else:
+      return Response({'error': 'Room name already exists'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
 class CreateRoomView(APIView):
   permission_classes = [permissions.IsAuthenticated]
 
@@ -219,7 +259,7 @@ class CreateRoomView(APIView):
               'number_of_rounds': request.data['number_of_rounds'],
               'time_per_pick': request.data['time_per_pick'],
               'time_per_guess': request.data['time_per_guess'],
-              'moving_allowed': request.data['moving_allowed'] == 'true',
+              'moving_allowed': request.data['moving_allowed'] == True,
           }   
       )
       room.save(using='nonrel')
@@ -288,6 +328,39 @@ class RejectInviteView(APIView):
 
     return Response({'success': 'Invite rejected'}, status=status.HTTP_200_OK)
 
+
+class JoinSinglePlayerRoomView(APIView):
+  def post(self, request):
+    # receive room id
+    room_name = request.data['room_name']
+    room_password = request.data['room_password']
+    user_nickname = 'You'
+
+    # get the room with name and password
+    room = Room.objects.using('nonrel').get(room_name=room_name, room_password=room_password)
+    
+    # if user.nickname not already in the username field inside the list of room_member, add the user to the room members list
+    if len(room.room_members) < room.room_configs.get('max_members') and user_nickname not in [member['username'] for member in room.room_members]:
+      room.room_members.append({
+        'id': 1,
+        'user_number': len(room.room_members) + 1,
+        'username': user_nickname,
+        'score': 0,
+        'is_ready': False,
+        'rounds': [],
+      })
+
+      # save the room
+      room.save(using='nonrel')
+
+      return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
+
+    elif user_nickname in [member['username'] for member in room.room_members]:
+      return Response(RoomSerializer(room).data, status=status.HTTP_200_OK)
+
+    else:
+      return Response({'error': 'Room is full'}, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class JoinRoomView(APIView):
   permission_classes = [permissions.IsAuthenticated]

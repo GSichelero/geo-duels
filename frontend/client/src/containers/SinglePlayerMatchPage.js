@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import Layout from 'components/Layout';
 import ClosingAlert from 'components/Alert';
-import { updateRoomValues } from 'features/user';
+import { updateRoomValues, createSinglePlayerRoom, joinSinglePlayerRoom } from 'features/user';
 import useWebSocket from 'react-use-websocket';
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 
@@ -69,72 +69,6 @@ let panorama;
 let map;
 let marker;
 
-function MyMapStreetComponentPick({
-    fenway,
-    playerName,
-    lat,
-    lng,
-  }) {
-    const refMap = useRef();
-    const refPano = useRef();
-  
-    useEffect(() => {
-        map = new window.google.maps.Map(refMap.current, {
-            center: fenway,
-            zoom: 2,
-            panControl: false,
-            zoomControl: true,
-            fullscreenControl: false,
-            streetViewControl: true
-        });
-        panorama = new window.google.maps.StreetViewPanorama(refPano.current, {
-            position: fenway,
-            pov: {
-            heading: 34,
-            pitch: 10,
-            },
-            linksControl: false,
-            panControl: false,
-            addressControl: false,
-            enableCloseButton: false,
-            zoomControl: true,
-            fullscreenControl: false,
-        });
-        map.setStreetView(panorama);
-    }, []);
-  
-    function updateLocation() {
-        selectedLocation = panorama.getPosition();
-        if (marker) {
-            marker.setMap(null);
-            marker = null;
-        }
-        marker = new window.google.maps.Marker({
-            position: selectedLocation,
-            title:"Pick",
-            label: {
-            text: playerName,
-            fontWeight: 'bold'
-            },
-            icon: {
-            url: icons[random],
-            labelOrigin: new window.google.maps.Point(8, -5)
-            }
-        });
-        marker.setMap(map);
-    }
-  
-    return (
-      <div id="mapsContainer">
-        <div ref={refMap} id="map" />
-        <div ref={refPano} id="pano" />
-        <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
-            onClick={updateLocation}>Select Location!
-        </button>
-      </div>
-    );
-}
-
 function MyMapStreetComponentGuess({
     fenway,
     playerName,
@@ -199,10 +133,10 @@ function MyMapStreetComponentGuess({
     }
   
     return (
-      <div id="mapsContainer">
-        <div ref={refMapGuess} id="map" />
-        <div ref={refPanoGuess} id="pano" />
-      </div>
+    <div className="flex flex-col md:flex-row h-[88vh] md:h-[75vh] lg:h-[85vh]">
+        <div ref={refMapGuess} id="map-single" className="w-full md:w-2/5 h-[90%] md:h-full lg:h-full"></div>
+        <div ref={refPanoGuess} id="pano-single" className="w-full md:w-3/5 h-[90%] md:h-full lg:h-full"></div>
+    </div>
     );
 }
 
@@ -234,10 +168,6 @@ function MyMapComponentResult({
                   marker = new window.google.maps.Marker({
                       position: correctPosition,
                       title:room_member.username,
-                      label: {
-                        text: playerName,
-                        fontWeight: 'bold'
-                      },
                       icon: {
                         url: "http://maps.google.com/mapfiles/kml/pal3/icon31.png",
                         labelOrigin: new window.google.maps.Point(8, -5)
@@ -254,10 +184,6 @@ function MyMapComponentResult({
                   marker = new window.google.maps.Marker({
                       position: latLngPosition,
                       title:room_member.username,
-                      label: {
-                        text: room_member.username,
-                        fontWeight: 'bold'
-                      },
                       icon: {
                         url: icons[random],
                         labelOrigin: new window.google.maps.Point(8, -5)
@@ -335,21 +261,19 @@ function MyMapComponentEndGame({
                 let lat = geoPoint.lat;
                 let lng = geoPoint.lng;
                 let latLngPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
-
-                marker = new window.google.maps.Marker({
-                    position: latLngPosition,
-                    title:picker_room_member.username,
-                    label: {
-                    text: picker_room_member.username,
-                    fontWeight: 'bold'
-                    },
-                    icon: {
-                    url: iconsBig[icon_index],
-                    labelOrigin: new window.google.maps.Point(8, -5),
-                    scaledSize: new window.google.maps.Size(40, 40),
-                    }
-                });
-                marker.setMap(map);
+                
+                if (picker_room_member.username == 'Computer') {
+                    marker = new window.google.maps.Marker({
+                        position: latLngPosition,
+                        title:picker_room_member.username,
+                        icon: {
+                        url: iconsBig[icon_index],
+                        labelOrigin: new window.google.maps.Point(8, -5),
+                        scaledSize: new window.google.maps.Size(40, 40),
+                        }
+                    });
+                    marker.setMap(map);
+                }
 
                 roomMatchValues.room_members.forEach(function(guesser_room_member) {
                     if (guesser_room_member.user_number != picker_room_member.user_number) {
@@ -357,20 +281,18 @@ function MyMapComponentEndGame({
                         let lat = geoPoint.guess_geopoint.lat;
                         let lng = geoPoint.guess_geopoint.lng;
                         let latLngPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
-
-                        marker = new window.google.maps.Marker({
-                            position: latLngPosition,
-                            title:guesser_room_member.username,
-                            label: {
-                            text: guesser_room_member.username,
-                            fontWeight: 'bold'
-                            },
-                            icon: {
-                            url: iconsSmall[icon_index],
-                            labelOrigin: new window.google.maps.Point(8, -5)
-                            }
-                        });
-                        marker.setMap(map);
+                        
+                        if (guesser_room_member.username != 'Computer') {
+                            marker = new window.google.maps.Marker({
+                                position: latLngPosition,
+                                title:guesser_room_member.username,
+                                icon: {
+                                url: iconsSmall[icon_index],
+                                labelOrigin: new window.google.maps.Point(8, -5)
+                                }
+                            });
+                            marker.setMap(map);
+                        }
                     }
                 });
                 icon_index++;
@@ -379,8 +301,7 @@ function MyMapComponentEndGame({
     });
 
     function playAgain() {
-        window.location.reload();
-        return <Navigate to="/play"/>;
+        window.location.href = '/proxy-single-player-match';
     }
 
     let playersAndScores = [];
@@ -429,6 +350,11 @@ function MyMapComponentEndGame({
         });
         playersAndScores.forEach((obj, index) => obj.rank = index + 1);
 
+        // remove the computer from the list
+        playersAndScores = playersAndScores.filter(function(playerResult) {
+            return playerResult.userName != 'Computer';
+        });
+
     return (
         <div id="mapsContainer">
           <table className="min-w-full">
@@ -444,57 +370,21 @@ function MyMapComponentEndGame({
             <tbody>
           {
             playersAndScores.map(function(playerResult) {
-
-                if (playerResult.rank == 1) {
-                    return (
-                        <tr className='bg-[#FFD700] bg-opacity-90 focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>🥇{playerResult.userName}</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.meanScore / 100).toFixed(1)}%</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.meanDistance / 1000)}Km ({Math.round(playerResult.meanDistance)}m)</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.playerScore / 100).toFixed(1)}</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.playerDistance / 1000)}Km ({Math.round(playerResult.playerDistance)}m)</td>
-                        </tr>
-                    );
-                }
-                else if (playerResult.rank == 2) {
-                    return (
-                        <tr className='bg-[#c0c0c0] bg-opacity-90 focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>🥈{playerResult.userName}</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.meanScore / 100).toFixed(1)}%</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.meanDistance / 1000)}Km ({Math.round(playerResult.meanDistance)}m)</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.playerScore / 100).toFixed(1)}</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.playerDistance / 1000)}Km ({Math.round(playerResult.playerDistance)}m)</td>
-                        </tr>
-                    );
-                }
-                else if (playerResult.rank == 3) {
-                    return (
-                        <tr className='bg-[#CD7F32] bg-opacity-90 focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>🥉{playerResult.userName}</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.meanScore / 100).toFixed(1)}%</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.meanDistance / 1000)}Km ({Math.round(playerResult.meanDistance)}m)</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{(playerResult.playerScore / 100).toFixed(1)}</td>
-                            <td className='text-blue-500 font-bold text-bold text-center py-1'>{Math.round(playerResult.playerDistance / 1000)}Km ({Math.round(playerResult.playerDistance)}m)</td>
-                        </tr>
-                    );
-                }
-                else {
-                    return (
-                        <tr className='focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
-                            <td className='text-white font-bold text-bold text-center py-1'>{playerResult.userName}</td>
-                            <td className='text-white font-bold text-bold text-center py-1'>{(playerResult.meanScore / 100).toFixed(1)}%</td>
-                            <td className='text-white font-bold text-bold text-center py-1'>{Math.round(playerResult.meanDistance / 1000)}Km ({Math.round(playerResult.meanDistance)}m)</td>
-                            <td className='text-white font-bold text-bold text-center py-1'>{(playerResult.playerScore / 100).toFixed(1)}</td>
-                            <td className='text-white font-bold text-bold text-center py-1'>{Math.round(playerResult.playerDistance / 1000)}Km ({Math.round(playerResult.playerDistance)}m)</td>
-                        </tr>
-                    );
-                }
+                return (
+                    <tr className='focus:outline-white rounded-lg w-full sm:w-auto px-5 py-2.5 text-center transition duration-300 ease-in-out hover:bg-black hover:bg-opacity-60'>
+                        <td className='text-white font-bold text-bold text-center py-1'>{playerResult.userName}</td>
+                        <td className='text-white font-bold text-bold text-center py-1'>{(playerResult.meanScore / 100).toFixed(1)}%</td>
+                        <td className='text-white font-bold text-bold text-center py-1'>{Math.round(playerResult.meanDistance / 1000)}Km ({Math.round(playerResult.meanDistance)}m)</td>
+                        <td className='text-white font-bold text-bold text-center py-1'>{(playerResult.playerScore / 100).toFixed(1)}</td>
+                        <td className='text-white font-bold text-bold text-center py-1'>{Math.round(playerResult.playerDistance / 1000)}Km ({Math.round(playerResult.playerDistance)}m)</td>
+                    </tr>
+                );
             })}
                 </tbody>
             </table>
             <div ref={refMap} id="mapResult" />
             <button className='mt-2 text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
-                onClick={playAgain}>Play another Game!
+                onClick={playAgain}>Play Again!
             </button>
         </div>
       );
@@ -570,31 +460,66 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
         setSubmitPhrase('Your chosen location was sent!');
     }
 
-    return (
-        <div>
-        <h2 className="text-white font-bold">{`Time left: ${seconds} seconds! ${submitPhrase}`}</h2>
-        <h2 className="text-white font-bold">{`${secondPhrase}`}</h2>
-        <button className='text-white text-bold bg-green-600 hover:bg-green-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
-            onClick={iAmReady}>Send Location!
-        </button>
-        </div>
-    );
+    if (state == 'guessing') {
+        return (
+            <div>
+            <h2 className="text-white font-bold">{`Time left: ${seconds} seconds! ${submitPhrase}`}</h2>
+            <button className='text-white text-bold bg-green-600 hover:bg-green-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
+                onClick={iAmReady}>Choose Location!
+            </button>
+            </div>
+        );
+    }
+    else if (state == 'results') {
+        return (
+            <div>
+            </div>
+        );
+    }
 }
 
-const MatchRoomPage = () => {
+let room_name = 'default';
+let room_password = 'reload';
+let max_members = 2;
+let time_per_pick = 30;
+
+const SinglePlayerMatchPage = () => {
     const dispatch = useDispatch();
-	const { isAuthenticated, user, loading, registered, joinedRoom, roomMatchValues, roomMatchCurrentTime } = useSelector(state => state.user);
-    let room_name = 'reload';
-    let room_owner = 'reload';
+    const { joinedRoom, roomMatchValues, roomMatchCurrentTime, createdRoom } = useSelector(state => state.user);
+
+    const [formData, setFormData] = useState({
+        number_of_rounds: 5,
+        time_per_guess: 300,
+        moving_allowed: false,
+    });
+
+    const { number_of_rounds, time_per_guess, moving_allowed } = formData;
+
+    const onChange = e => {
+        setFormData({ ...formData, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
+    };
+
+    const onSubmit = e => {
+        e.preventDefault();
+        room_name = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        room_password = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+        dispatch(createSinglePlayerRoom({ room_name, room_password, max_members, number_of_rounds, time_per_pick, time_per_guess, moving_allowed }));
+    };
+
+    let room_owner = 'default';
     let url = process.env.REACT_APP_WS_URL;
-    let room_password = 'reload';
-    let user_nickname = 'reload';
+    let user_nickname = 'default';
+
+    if (createdRoom && !joinedRoom) {
+		dispatch(joinSinglePlayerRoom({ room_name, room_password }));
+	}
     if (joinedRoom) {
         room_name = joinedRoom.room_name;
         room_owner = joinedRoom.room_owner;
-        url = `${process.env.REACT_APP_WS_URL}/ws/room/${room_name}/`;
+        url = `${process.env.REACT_APP_WS_URL}/ws/spmatch/${room_name}/`;
         room_password = joinedRoom.room_password;
-        user_nickname = user.nickname;
+        user_nickname = 'You';
     }
 
     const center = { lat: 0, lng: 0 };
@@ -622,44 +547,14 @@ const MatchRoomPage = () => {
 
     const WrapperMaps = React.useMemo(() => {
         if (!roomMatchValues) {
-            return (
-                <ClosingAlert text={'Click on the Play tab!'} color={'red'} />
-            );
+            dispatch(joinSinglePlayerRoom({ room_name, room_password }));
         }
 
         else if (roomMatchValues.room_state == 'waiting') {
-            let playersConnected = roomMatchValues.room_members.map((player) => player.username);
-            let playersReady = roomMatchValues.room_members.filter((player) => player.is_ready).map((player) => player.username);
+            sendMessage(JSON.stringify({ 'ready': 'yes' }));
             return (
                 <div>
-                    <h1 className="text-3xl font-bold text-white text-center m-12">Room Name: {room_name}</h1>
-                    <h1 className="text-3xl font-bold text-white text-center m-12">Room Owner: {room_owner}</h1>
-                    <h1 className="text-3xl font-bold text-white text-center m-12">Waiting for players to join the room...</h1>
-                    <h2 className="text-white font-bold">Players connected: {playersConnected.join(', ')}</h2>
-                    <h2 className="text-white font-bold">Players ready: {playersReady.join(', ')}</h2>
-                    <button className='text-white text-bold bg-green-600 hover:bg-green-400 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
-                        onClick={() => sendMessage(JSON.stringify({ 'ready': 'yes' }))}>I'm Ready!
-                    </button>
-                    <div>
-                        <ClosingAlert text={'First, everyone will pick one location which the other players will have to guess where it is located based only on the Street View Image!'} color={'blue'} />
-                        <ClosingAlert text={'1º(Picking Phase) Grab the street view icon to the place you want to choose then click on "Select Location" button and then on "Send Location" button!'} color={'pink'} />
-                        <ClosingAlert text={'Now you will try to guess the places the other players have chosen and they will also try to guess yours!'} color={'blue'} />
-                        <ClosingAlert text={'2º(Guessing Phase) Click on the map where you think the image on the right is located and then click on "Send Location" button!'} color={'pink'} />
-                        <ClosingAlert text={"2º(Guessing Phase) If it's the location you have chosen, just wait the other players make their guesses!"} color={'pink'} />
-                        <ClosingAlert text={"After everyone made their guesses, you will see a a map with everyone's answers and then move to the next round!"} color={'yellow'} />
-                    </div>
-                </div>
-            );
-        }
-
-        else if (roomMatchValues.room_state == 'picking') {
-            let remainingTime = Math.ceil(roomMatchValues.room_deadline_time - roomMatchCurrentTime);
-            return (
-                <div id="mapsContainer">
-                    <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
-                        <MyMapStreetComponentPick fenway={center} playerName={user.nickname} lat={-34.397} lng={150.644}/>
-                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={'picking phase'} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
-                    </Wrapper>
+                    <h1 className="text-white font-bold">Loading...</h1>
                 </div>
             );
         }
@@ -683,8 +578,8 @@ const MatchRoomPage = () => {
             return (
                 <div id="mapsContainer">
                     <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
-                        <MyMapStreetComponentGuess fenway={center} playerName={user.nickname} lat={latPick} lng={lngPick} movingAllowed={movingAllowed}/>
-                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={roundPlayerName} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
+                        <MyMapStreetComponentGuess fenway={center} playerName={user_nickname} lat={latPick} lng={lngPick} movingAllowed={movingAllowed}/>
+                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user_nickname} roundPlayerName={roundPlayerName} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
                     </Wrapper>
                 </div>
             );
@@ -704,7 +599,7 @@ const MatchRoomPage = () => {
                 <div id="mapsContainer">
                     <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
                         <MyMapComponentResult fenway={center} roomMatchValues={roomMatchValues}/>
-                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={roundPlayerName} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
+                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user_nickname} roundPlayerName={roundPlayerName} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
                     </Wrapper>
                 </div>
             );
@@ -727,11 +622,77 @@ const MatchRoomPage = () => {
         }
     }, [roomMatchValues]);
 
-	return (
-		<Layout title='Geo Duels | Home' content='Home page'>
-            {WrapperMaps}
-		</Layout>
-	);
+    if (!createdRoom) {
+        return (
+            <Layout title='Geo Duels | Home' content='Home page'>
+            <div>
+                <div>
+                <div >
+                <form onSubmit={onSubmit}>
+                    <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-lg text-sm w-full py-3 px-4 mt-1 mb-4'>Play!</button>
+                    <div>
+                        <ClosingAlert text={'You will have to guess where these 5 places are located based only on the Street View Image!'} color={'blue'} />
+                        <ClosingAlert text={'Click on the map where you think the image on the right is located and then click on "Choose Location" button!'} color={'pink'} />
+                        <ClosingAlert text={"After you make your guess, you will see a a map with your answer and the correct location and then move to the next round!"} color={'yellow'} />
+                    </div>
+                    <div>
+                        <h1 className='text-4xl font-bold text-white text-center m-5'>Options</h1>
+                    </div>
+                        <div className='mb-3'>
+                            <label htmlFor='number_of_rounds' className='block mb-2 text-sm font-medium text-white'>
+                                Number of Rounds
+                            </label>
+                            <input
+                                type='number'
+                                className='bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'
+                                id='number_of_rounds'
+                                name='number_of_rounds'
+                                value={number_of_rounds}
+                                onChange={onChange}
+                                required
+                            />
+                        </div>
+                        <div className='mb-3'>
+                            <label htmlFor='time_per_guess' className='block mb-2 text-sm font-medium text-white'>
+                                Time per Guess (seconds)
+                            </label>
+                            <input
+                                type='number'
+                                className='bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'
+                                id='time_per_guess'
+                                name='time_per_guess'
+                                value={time_per_guess}
+                                onChange={onChange}
+                                required
+                            />
+                        </div>
+                        <div className='mb-3'>
+                            <label htmlFor='moving_allowed' className='inline-block text-sm font-medium text-white'>
+                                Moving Allowed
+                            </label>
+                            <input
+                                type='checkbox'
+                                className='h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer'
+                                id='moving_allowed'
+                                name='moving_allowed'
+                                value={moving_allowed}
+                                onChange={onChange}
+                            />
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+            </Layout>
+        );
+    }
+    else {
+        return (
+            <Layout title='Geo Duels | Home' content='Home page'>
+                {WrapperMaps}
+            </Layout>
+        );
+    }
 };
 
-export default MatchRoomPage;
+export default SinglePlayerMatchPage;

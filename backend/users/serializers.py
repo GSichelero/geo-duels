@@ -14,6 +14,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
   def validate(self, data):
     user = User(**data)
     password = data.get('password')
+    nickname = data.get('nickname')
+
+    if nickname == 'You' or nickname == 'Computer':
+      raise exceptions.ValidationError(
+        {'nickname': 'This nickname is not allowed'}
+      )
 
     try:
       validate_password(password, user)
