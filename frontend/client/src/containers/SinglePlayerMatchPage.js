@@ -301,7 +301,7 @@ function MyMapComponentEndGame({
     });
 
     function playAgain() {
-        window.location.href = '/proxy-home';
+        window.location.href = '/proxy-single-player-match';
     }
 
     let playersAndScores = [];
@@ -384,7 +384,7 @@ function MyMapComponentEndGame({
             </table>
             <div ref={refMap} id="mapResult" />
             <button className='mt-2 text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center'
-                onClick={playAgain}>Play another Game!
+                onClick={playAgain}>Play Again!
             </button>
         </div>
       );
@@ -478,14 +478,42 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
     }
 }
 
+let room_name = 'default';
+let room_password = 'reload';
+let max_members = 2;
+let time_per_pick = 30;
+
 const SinglePlayerMatchPage = () => {
     const dispatch = useDispatch();
-	const { isAuthenticated, user, loading, registered, joinedRoom, roomMatchValues, roomMatchCurrentTime } = useSelector(state => state.user);
-    let room_name = 'reload';
+    const { joinedRoom, roomMatchValues, roomMatchCurrentTime, createdRoom } = useSelector(state => state.user);
+
+    const [formData, setFormData] = useState({
+        number_of_rounds: 5,
+        time_per_guess: 300,
+        moving_allowed: false,
+    });
+
+    const { number_of_rounds, time_per_guess, moving_allowed } = formData;
+
+    const onChange = e => {
+        setFormData({ ...formData, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
+    };
+
+    const onSubmit = e => {
+        e.preventDefault();
+        room_name = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        room_password = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+        dispatch(createSinglePlayerRoom({ room_name, room_password, max_members, number_of_rounds, time_per_pick, time_per_guess, moving_allowed }));
+    };
+
     let room_owner = 'default';
     let url = process.env.REACT_APP_WS_URL;
-    let room_password = 'reload';
     let user_nickname = 'default';
+
+    if (createdRoom && !joinedRoom) {
+		dispatch(joinSinglePlayerRoom({ room_name, room_password }));
+	}
     if (joinedRoom) {
         room_name = joinedRoom.room_name;
         room_owner = joinedRoom.room_owner;
@@ -523,16 +551,10 @@ const SinglePlayerMatchPage = () => {
         }
 
         else if (roomMatchValues.room_state == 'waiting') {
+            sendMessage(JSON.stringify({ 'ready': 'yes' }));
             return (
                 <div>
-                    <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full py-3 px-4 mt-1 mb-4'
-                        onClick={() => sendMessage(JSON.stringify({ 'ready': 'yes' }))}>I'm Ready!
-                    </button>
-                    <div>
-                        <ClosingAlert text={'You will have to guess where these 5 places are located based only on the Street View Image!'} color={'blue'} />
-                        <ClosingAlert text={'Click on the map where you think the image on the right is located and then click on "Choose Location" button!'} color={'pink'} />
-                        <ClosingAlert text={"After you make your guess, you will see a a map with your answer and the correct location and then move to the next round!"} color={'yellow'} />
-                    </div>
+                    <h1 className="text-white font-bold">Loading...</h1>
                 </div>
             );
         }
@@ -600,11 +622,77 @@ const SinglePlayerMatchPage = () => {
         }
     }, [roomMatchValues]);
 
-	return (
-		<Layout title='Geo Duels | Home' content='Home page'>
-            {WrapperMaps}
-		</Layout>
-	);
+    if (!createdRoom) {
+        return (
+            <Layout title='Geo Duels | Home' content='Home page'>
+            <div>
+                <div>
+                <div >
+                <form onSubmit={onSubmit}>
+                    <button className='text-blue-700 text-bold bg-white hover:bg-blue-100 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-lg text-sm w-full py-3 px-4 mt-1 mb-4'>Play!</button>
+                    <div>
+                        <ClosingAlert text={'You will have to guess where these 5 places are located based only on the Street View Image!'} color={'blue'} />
+                        <ClosingAlert text={'Click on the map where you think the image on the right is located and then click on "Choose Location" button!'} color={'pink'} />
+                        <ClosingAlert text={"After you make your guess, you will see a a map with your answer and the correct location and then move to the next round!"} color={'yellow'} />
+                    </div>
+                    <div>
+                        <h1 className='text-4xl font-bold text-white text-center m-5'>Options</h1>
+                    </div>
+                        <div className='mb-3'>
+                            <label htmlFor='number_of_rounds' className='block mb-2 text-sm font-medium text-white'>
+                                Number of Rounds
+                            </label>
+                            <input
+                                type='number'
+                                className='bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'
+                                id='number_of_rounds'
+                                name='number_of_rounds'
+                                value={number_of_rounds}
+                                onChange={onChange}
+                                required
+                            />
+                        </div>
+                        <div className='mb-3'>
+                            <label htmlFor='time_per_guess' className='block mb-2 text-sm font-medium text-white'>
+                                Time per Guess (seconds)
+                            </label>
+                            <input
+                                type='number'
+                                className='bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5'
+                                id='time_per_guess'
+                                name='time_per_guess'
+                                value={time_per_guess}
+                                onChange={onChange}
+                                required
+                            />
+                        </div>
+                        <div className='mb-3'>
+                            <label htmlFor='moving_allowed' className='inline-block text-sm font-medium text-white'>
+                                Moving Allowed
+                            </label>
+                            <input
+                                type='checkbox'
+                                className='h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer'
+                                id='moving_allowed'
+                                name='moving_allowed'
+                                value={moving_allowed}
+                                onChange={onChange}
+                            />
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+            </Layout>
+        );
+    }
+    else {
+        return (
+            <Layout title='Geo Duels | Home' content='Home page'>
+                {WrapperMaps}
+            </Layout>
+        );
+    }
 };
 
 export default SinglePlayerMatchPage;
