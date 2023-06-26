@@ -395,12 +395,20 @@ function MyMapComponentEndGame({
                     let geoPoint = round.guessings.find((guessing) => guessing.guess_number == j);
                     let lat = geoPoint.guess_geopoint.lat
                     let lng = geoPoint.guess_geopoint.lng
+                    if (!parseFloat(lat) || !parseFloat(lng)) {
+                        lat = 0;
+                        lng = 0;
+                    }
                     let selectedPosition = { lat: parseFloat(lat), lng: parseFloat(lng) };
 
                     let playerPicker = roomMatchValues.room_members.find((member) => member.user_number == j);
                     let pick = playerPicker.rounds.find((round) => round.round_number == i).picking;
                     let latPick = pick.lat;
                     let lngPick = pick.lng;
+                    if (!parseFloat(latPick) || !parseFloat(lngPick)) {
+                        latPick = 0;
+                        lngPick = 0;
+                    }
                     let pickedPosition = { lat: parseFloat(latPick), lng: parseFloat(lngPick) };
 
                     let distanceFromCorrectPlace = window.google.maps.geometry.spherical.computeDistanceBetween(pickedPosition, selectedPosition);
@@ -500,7 +508,7 @@ function MyMapComponentEndGame({
       );
 }
 
-function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendMessage, state}) {
+function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, round, sendMessage, state}) {
     const [seconds, setSeconds] = useState(Number(remainingTime));
     const [submitPhrase, setSubmitPhrase] = useState("Loading...");
     const [secondPhrase, setSecondPhrase] = useState("Loading...");
@@ -522,7 +530,7 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
             const timer = () => setTimeout(() => setSeconds(seconds - 1), 1000);
             const timerId = timer();
             if (state == 'guessing') {
-                setSecondPhrase(`Location chosen by: ${roundPlayerName}!`);
+                setSecondPhrase(`Location chosen by: ${roundPlayerName}! Round ${round}`);
                 if (userName == roundPlayerName) {
                     setSubmitPhrase('The other players are guessing your location, wait a little!');
                 }
@@ -531,7 +539,7 @@ function CalculateTimeLeftGuess({remainingTime, userName, roundPlayerName, sendM
                 }
             }
             else if (state == 'picking') {
-                setSecondPhrase('The other players will have to guess the location you choose!');
+                setSecondPhrase(`The other players will have to guess the location you choose! Round ${round}`);
                 setSubmitPhrase('Pick a location!');
             }
             else if (state == 'results') {
@@ -658,7 +666,7 @@ const MatchRoomPage = () => {
                 <div id="mapsContainer">
                     <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
                         <MyMapStreetComponentPick fenway={center} playerName={user.nickname} lat={-34.397} lng={150.644}/>
-                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={'picking phase'} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
+                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={'picking phase'} round={roomMatchValues.room_round} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
                     </Wrapper>
                 </div>
             );
@@ -684,7 +692,7 @@ const MatchRoomPage = () => {
                 <div id="mapsContainer">
                     <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
                         <MyMapStreetComponentGuess fenway={center} playerName={user.nickname} lat={latPick} lng={lngPick} movingAllowed={movingAllowed}/>
-                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={roundPlayerName} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
+                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={roundPlayerName} round={roomMatchValues.room_round} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
                     </Wrapper>
                 </div>
             );
@@ -704,7 +712,7 @@ const MatchRoomPage = () => {
                 <div id="mapsContainer">
                     <Wrapper apiKey={process.env.REACT_APP_MAPS_API_KEY} render={render} libraries={["geometry"]}>
                         <MyMapComponentResult fenway={center} roomMatchValues={roomMatchValues}/>
-                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={roundPlayerName} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
+                        <CalculateTimeLeftGuess remainingTime={remainingTime} userName={user.nickname} roundPlayerName={roundPlayerName} round={roomMatchValues.room_round} sendMessage={sendMessage} state={roomMatchValues.room_state}/>
                     </Wrapper>
                 </div>
             );
