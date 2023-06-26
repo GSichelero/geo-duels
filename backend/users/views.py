@@ -238,9 +238,6 @@ class CreateRoomView(APIView):
   permission_classes = [permissions.IsAuthenticated]
 
   def post(self, request):
-    if not request.user.is_staff:
-      return Response({'error': 'You are not allowed to create a room'}, status=status.HTTP_400_BAD_REQUEST)
-
     if not Room.objects.using('nonrel').filter(room_name=request.data['room_name']).exists():
       room = Room(
           room_name=request.data['room_name'],
