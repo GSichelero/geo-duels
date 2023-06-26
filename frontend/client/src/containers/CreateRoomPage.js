@@ -13,18 +13,29 @@ const CreateRoomPage = () => {
     }, []);
 
     const [formData, setFormData] = useState({
-		room_name: '',
+		room_name: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
 		room_password: '',
-		max_members: 0,
-		number_of_rounds: 0,
-		time_per_pick: 0,
-        time_per_guess: 0,
+		max_members: 2,
+		number_of_rounds: 1,
+		time_per_pick: 60,
+        time_per_guess: 60,
         moving_allowed: false,
 	});
 
 	const {  room_name, room_password, max_members, number_of_rounds, time_per_pick, time_per_guess, moving_allowed } = formData;
 
 	const onChange = e => {
+        if (e.target.name == 'max_members' || e.target.name == 'number_of_rounds' || e.target.name == 'time_per_pick' || e.target.name == 'time_per_guess') {
+            if (e.target.value < 1 && e.target.name != 'max_members') {
+                e.target.value = 1;
+            }
+            else if (e.target.value < 2 && e.target.name == 'max_members') {
+                e.target.value = 2;
+            }
+            else if ((e.target.name == 'max_members' || e.target.name == 'number_of_rounds') && e.target.value > 10) {
+                e.target.value = 10;
+            }
+        }
         setFormData({ ...formData, [e.target.name]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
     };
 

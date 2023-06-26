@@ -107,7 +107,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         if user["username"] == self.nickname:
                             get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] = text_data_json["guess"]["lat"]
                             get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lng"] = text_data_json["guess"]["lng"]
-                            break
+                        elif user["user_number"] == self.room.player_turn:
+                            get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] = 1
+                            get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lng"] = 1
                     await sync_to_async(self.room.save)(using='nonrel')
 
             if current_time.timestamp() >= self.room.room_deadline_time and not all(get_dict_from_list(get_dict_from_list(user["rounds"], "round_number", self.room.room_round)["guessings"], "guess_number", self.room.player_turn)["guess_geopoint"]["lat"] for user in self.room.room_members):
@@ -365,7 +367,7 @@ class SinglePlayerMatchConsumer(AsyncWebsocketConsumer):
         (-36.8481302,174.7623019),   # Sky Tower, Auckland
         ]
 
-        five_places = random.sample(places, 5)
+        random_chosen_places = random.sample(places, self.room.room_configs["number_of_rounds"])
 
         if self.room.room_state == "waiting":
             self.room.room_state = "guessing"
@@ -408,8 +410,8 @@ class SinglePlayerMatchConsumer(AsyncWebsocketConsumer):
                             ],
                             "picking": {
                                 "id": 1,
-                                "lat": five_places[i-1][0],
-                                "lng": five_places[i-1][1],
+                                "lat": random_chosen_places[i-1][0],
+                                "lng": random_chosen_places[i-1][1],
                             }
                         })
                 else:
